@@ -12,6 +12,7 @@ interface Client {
   phone: string;
   current_balance: number;
   renewal_balance: number;
+  email: string;
   subscription_number: string;
 }
 
