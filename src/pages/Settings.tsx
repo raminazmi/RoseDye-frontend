@@ -38,7 +38,7 @@ const Settings = () => {
 
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:8000/api/v1/user', {
+        const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = response.data.user;
@@ -78,7 +78,7 @@ const Settings = () => {
 
     try {
       setIsUploading(true); // إظهار مؤشر التحميل
-      const response = await axios.post('http://localhost:8000/api/v1/user/avatar', uploadData, {
+      const response = await axios.post('https://rosedye-backend-production.up.railway.app/api/v1/user/avatar', uploadData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -109,7 +109,7 @@ const Settings = () => {
     setIsSaving(true);
     try {
       const response = await axios.put(
-        'http://localhost:8000/api/v1/user/profile',
+        'https://rosedye-backend-production.up.railway.app/api/v1/user/profile',
         {
           name: formData.fullName,
           phone: formData.phoneNumber,
@@ -138,7 +138,7 @@ const Settings = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const avatarUrl = user?.avatar ? `http://localhost:8000/${user.avatar}` : userSix;
+  const avatarUrl = user?.avatar ? `https://rosedye-backend-production.up.railway.app/${user.avatar}` : userSix;
 
   return (
     <>

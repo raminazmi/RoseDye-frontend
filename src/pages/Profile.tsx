@@ -44,7 +44,7 @@ const Profile = () => {
       }
 
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/user', {
+        const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data.user);
@@ -83,7 +83,7 @@ const Profile = () => {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const response = await axios.post('http://localhost:8000/api/v1/user/avatar', formData, {
+      const response = await axios.post('https://rosedye-backend-production.up.railway.app/api/v1/user/avatar', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -107,7 +107,7 @@ const Profile = () => {
 
     try {
       const response = await axios.put(
-        'http://localhost:8000/api/v1/user/profile',
+        'https://rosedye-backend-production.up.railway.app/api/v1/user/profile',
         formData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -138,7 +138,7 @@ const Profile = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const avatarUrl = user?.avatar ? `http://localhost:8000/${user.avatar}` : null;
+  const avatarUrl = user?.avatar ? `https://rosedye-backend-production.up.railway.app/${user.avatar}` : null;
   const getInitial = () => {
     if (!user || !user.name) return '?';
     return user.name.charAt(0).toUpperCase();

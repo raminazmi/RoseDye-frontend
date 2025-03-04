@@ -105,7 +105,7 @@ const ChartTwo: React.FC = () => {
           params.append('last_week', 'true');
         }
 
-        const response = await fetch(`http://localhost:8000/api/v1/statistics/${endpoint}?${params.toString()}`, {
+        const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/statistics/${endpoint}?${params.toString()}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,

@@ -146,7 +146,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         setErrors({});
         setIsSubmitting(true);
         try {
-            const response = await fetch('http://localhost:8000/api/v1/clients', {
+            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/clients', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                 },
                 body: JSON.stringify({
                     ...formData,
-                    phone: `${countryCode}${formData.phone}`, // دمج المقدمة مع الرقم
+                    phone: `${countryCode}${formData.phone}`,
                     current_balance: parseFloat(formData.current_balance),
                     renewal_balance: parseFloat(formData.renewal_balance),
                 }),
@@ -176,7 +176,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     company_name: '',
                     address: '',
                 });
-                setCountryCode('+966'); // إعادة تعيين المقدمة
+                setCountryCode('+966');
                 onClientAdded();
             } else {
                 toast.error(data.message || 'حدث خطأ أثناء الحفظ');
@@ -201,9 +201,9 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                 company_name: '',
                 address: '',
             });
-            setCountryCode('+966'); // إعادة تعيين المقدمة
+            setCountryCode('+966');
             setIsClearing(false);
-        }, 500); // محاكاة تأخير صغير لإظهار الـ Loader
+        }, 500);
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {

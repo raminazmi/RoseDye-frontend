@@ -179,7 +179,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/v1/clients/${client.id}`, {
+            const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/clients/${client.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -187,7 +187,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                 },
                 body: JSON.stringify({
                     name: formData.name,
-                    phone: `${countryCode}${formData.phone}`, // دمج المقدمة مع الرقم
+                    phone: `${countryCode}${formData.phone}`,
                     current_balance: parseFloat(formData.current_balance),
                     renewal_balance: parseFloat(formData.renewal_balance),
                     company_name: formData.company_name || null,

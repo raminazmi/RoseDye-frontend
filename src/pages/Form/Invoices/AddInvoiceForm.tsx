@@ -55,7 +55,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch(`http://localhost:8000/api/v1/clients`, {
+            const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/clients`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -109,7 +109,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 return;
             }
 
-            const response = await fetch('http://localhost:8000/api/v1/invoices', {
+            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/invoices', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

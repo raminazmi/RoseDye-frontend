@@ -38,7 +38,7 @@ const Invoices: React.FC = () => {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/v1/invoices?page=${currentPage}&per_page=${itemsPerPage}`, {
+      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/invoices?page=${currentPage}&per_page=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -74,7 +74,7 @@ const Invoices: React.FC = () => {
 
     try {
       setIsDeleting(true);
-      const response = await fetch(`http://localhost:8000/api/v1/invoices/${selectedInvoiceId}`, {
+      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/invoices/${selectedInvoiceId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -100,7 +100,7 @@ const Invoices: React.FC = () => {
 
   const handleStatusChange = async (invoiceId: number, newStatus: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/invoices/${invoiceId}/status`, {
+      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/invoices/${invoiceId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

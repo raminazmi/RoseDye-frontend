@@ -29,7 +29,7 @@ const DropdownUser = () => {
       }
 
       try {
-        const response = await axios.get('http://localhost:8000/api/v1/user', {
+        const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(response.data.user);
@@ -53,7 +53,7 @@ const DropdownUser = () => {
     return user.name.charAt(0).toUpperCase();
   };
 
-  const avatarUrl = user?.avatar ? `http://localhost:8000/${user.avatar}` : null;
+  const avatarUrl = user?.avatar ? `https://rosedye-backend-production.up.railway.app/${user.avatar}` : null;
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
