@@ -154,7 +154,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                 },
                 body: JSON.stringify({
                     ...formData,
-                    phone: `${countryCode}${formData.phone}`,
+                    phone: `${countryCode}${formData.phone.startsWith('0') ? formData.phone.slice(1) : formData.phone}`, // إزالة الصفر الأول
                     current_balance: parseFloat(formData.current_balance),
                     renewal_balance: parseFloat(formData.renewal_balance),
                 }),
@@ -208,8 +208,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        if (name === 'phone') setFormData({ ...formData, [name]: value.replace(/[^0-9]/g, '') });
-        else if (name === 'countryCode') setCountryCode(value);
+        if (name === 'phone') setFormData({ ...formData, [name]: value.replace(/[^0-9]/g, '').replace(/^0/, '') });        else if (name === 'countryCode') setCountryCode(value);
         else setFormData({ ...formData, [name]: value });
     };
 

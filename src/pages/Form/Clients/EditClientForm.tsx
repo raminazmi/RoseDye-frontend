@@ -187,7 +187,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                 },
                 body: JSON.stringify({
                     name: formData.name,
-                    phone: `${countryCode}${formData.phone}`,
+                    phone: `${countryCode}${formData.phone.startsWith('0') ? formData.phone.slice(1) : formData.phone}`,
                     current_balance: parseFloat(formData.current_balance),
                     renewal_balance: parseFloat(formData.renewal_balance),
                     company_name: formData.company_name || null,
@@ -214,8 +214,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        if (name === 'phone') setFormData({ ...formData, [name]: value.replace(/[^0-9]/g, '') });
-        else if (name === 'countryCode') setCountryCode(value);
+        if (name === 'phone') setFormData({ ...formData, [name]: value.replace(/[^0-9]/g, '').replace(/^0/, '') });        else if (name === 'countryCode') setCountryCode(value);
         else setFormData({ ...formData, [name]: value });
     };
 
