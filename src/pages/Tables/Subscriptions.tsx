@@ -59,7 +59,7 @@ const Subscriptions: React.FC = () => {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
-        responseType: 'blob', // مهم لمعالجة الملفات
+        responseType: 'blob',
       });
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
@@ -71,8 +71,17 @@ const Subscriptions: React.FC = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
-    } catch (error) {
-      toast.success(`تمت عملية التصدير بنجاح`);
+    } catch (error: any) {
+      if (error.response && error.response.data instanceof Blob) {
+        const reader = new FileReader();
+        reader.onload = (e: ProgressEvent<FileReader>) => {
+          const errorText = e.target?.result as string;
+          toast.error(`فشل التصدير: ${errorText}`);
+        };
+        reader.readAsText(error.response.data);
+      } else {
+        toast.error('حدث خطأ غير متوقع أثناء التصدير');
+      }
     } finally {
       setExportLoading(false);
     }
