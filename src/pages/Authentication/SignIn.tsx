@@ -240,7 +240,9 @@ const SignIn: React.FC = () => {
     setLoading(true);
     setError(null);
 
-    const fullPhone = `${countryCode}${phone}`; // دمج المقدمة مع الرقم
+    const cleanedPhone = phone.startsWith('0') ? phone.slice(1) : phone;
+    const fullPhone = `${countryCode}${cleanedPhone}`;
+
     try {
       const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/client-login', {
         method: 'POST',
