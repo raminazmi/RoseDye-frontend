@@ -22,10 +22,13 @@ const Settings = () => {
     phoneNumber: '',
     emailAddress: '',
     bio: '',
+    password: '',
+    confirmPassword: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -48,6 +51,8 @@ const Settings = () => {
           phoneNumber: userData.phone || '',
           emailAddress: userData.email || '',
           bio: userData.bio || '',
+          password: '',
+          confirmPassword: '', 
         });
       } catch (error) {
         toast.error('فشل في جلب بيانات المستخدم');
@@ -77,7 +82,7 @@ const Settings = () => {
     uploadData.append('avatar', file);
 
     try {
-      setIsUploading(true); // إظهار مؤشر التحميل
+      setIsUploading(true);
       const response = await axios.post('https://rosedye-backend-production.up.railway.app/api/v1/user/avatar', uploadData, {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -94,7 +99,7 @@ const Settings = () => {
       }
       console.error('Upload error:', error);
     } finally {
-      setIsUploading(false); // إخفاء مؤشر التحميل
+      setIsUploading(false);
     }
   };
 
@@ -106,6 +111,12 @@ const Settings = () => {
       return;
     }
 
+    if (formData.password && formData.password !== formData.confirmPassword) {
+      setPasswordError('كلمات المرور غير متطابقة');
+      return;
+    }
+    setPasswordError(null);
+
     setIsSaving(true);
     try {
       const response = await axios.put(
@@ -115,6 +126,7 @@ const Settings = () => {
           phone: formData.phoneNumber,
           email: formData.emailAddress,
           bio: formData.bio,
+          password: formData.password || undefined,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -138,6 +150,7 @@ const Settings = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   const avatarUrl = user?.avatar ? `https://rosedye-backend-production.up.railway.app/${user.avatar}` : userSix;
 
   return (
@@ -270,6 +283,90 @@ const Settings = () => {
                     <div className="mb-5.5">
                       <label
                         className="mb-3 block text-sm font-medium text-black dark:text-white"
+                        htmlFor="password"
+                      >
+                        كلمة المرور
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-4.5 top-4">
+                          <svg
+                            className="fill-current"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M9.99967 14.1666C11.8406 14.1666 13.333 12.6742 13.333 10.8333C13.333 8.99242 11.8406 7.5 9.99967 7.5C8.15877 7.5 6.66634 8.99242 6.66634 10.8333C6.66634 12.6742 8.15877 14.1666 9.99967 14.1666Z"
+                              fill=""
+                            />
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M5.83301 5.83329C4.72685 5.83329 3.82687 6.48625 3.39131 7.45179L0.833008 12.5V15.8333C0.833008 16.6065 1.46018 17.2337 2.23334 17.2337H17.7663C18.5395 17.2337 19.1663 16.6065 19.1663 15.8333V12.5L16.608 7.45179C16.1724 6.48625 15.2725 5.83329 14.1663 5.83329H5.83301ZM1.66634 15.8333V12.9706L4.22465 7.92185C4.66021 6.95631 5.56019 6.30335 6.66634 6.30335H13.333C14.4392 6.30335 15.3392 6.95631 15.7747 7.92185L18.333 12.9706V15.8333H1.66634Z"
+                              fill=""
+                            />
+                          </svg>
+                        </span>
+                        <input
+                          className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                          type="password"
+                          name="password"
+                          id="password"
+                          value={formData.password}
+                          onChange={handleInputChange}
+                          placeholder="كلمة المرور"
+                        />
+                      </div>
+                      {passwordError && <span className="text-red-500 text-sm mt-1 block">{passwordError}</span>}
+                    </div>
+
+                    <div className="mb-5.5">
+                      <label
+                        className="mb-3 block text-sm font-medium text-black dark:text-white"
+                        htmlFor="confirmPassword"
+                      >
+                        تأكيد كلمة المرور
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-4.5 top-4">
+                          <svg
+                            className="fill-current"
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M9.99967 14.1666C11.8406 14.1666 13.333 12.6742 13.333 10.8333C13.333 8.99242 11.8406 7.5 9.99967 7.5C8.15877 7.5 6.66634 8.99242 6.66634 10.8333C6.66634 12.6742 8.15877 14.1666 9.99967 14.1666Z"
+                              fill=""
+                            />
+                            <path
+                              fillRule="evenodd"
+                              clipRule="evenodd"
+                              d="M5.83301 5.83329C4.72685 5.83329 3.82687 6.48625 3.39131 7.45179L0.833008 12.5V15.8333C0.833008 16.6065 1.46018 17.2337 2.23334 17.2337H17.7663C18.5395 17.2337 19.1663 16.6065 19.1663 15.8333V12.5L16.608 7.45179C16.1724 6.48625 15.2725 5.83329 14.1663 5.83329H5.83301ZM1.66634 15.8333V12.9706L4.22465 7.92185C4.66021 6.95631 5.56019 6.30335 6.66634 6.30335H13.333C14.4392 6.30335 15.3392 6.95631 15.7747 7.92185L18.333 12.9706V15.8333H1.66634Z"
+                              fill=""
+                            />
+                          </svg>
+                        </span>
+                        <input
+                          className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                          type="password"
+                          name="confirmPassword"
+                          id="confirmPassword"
+                          value={formData.confirmPassword}
+                          onChange={handleInputChange}
+                          placeholder="تأكيد كلمة المرور"
+                        />
+                      </div>
+                      {passwordError && <span className="text-red-500 text-sm mt-1 block">{passwordError}</span>}
+                    </div>
+
+                    <div className="mb-5.5">
+                      <label
+                        className="mb-3 block text-sm font-medium text-black dark:text-white"
                         htmlFor="bio"
                       >
                         نبذة عني
@@ -338,7 +435,7 @@ const Settings = () => {
                 <h3 className="font-medium text-black dark:text-white">صورتي</h3>
               </div>
               {isLoading ? (
-<Loader />
+                <Loader />
               ) : (
                 <div className="p-7">
                   <div className="mb-4 flex items-center gap-3">
