@@ -22,7 +22,7 @@ const Settings = () => {
     phoneNumber: '',
     emailAddress: '',
     bio: '',
-    password: '', 
+    password: '',
     confirmPassword: '',
   });
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +52,7 @@ const Settings = () => {
           phoneNumber: userData.phone || '',
           emailAddress: userData.email || '',
           bio: userData.bio || '',
-          password: userData.password || '', 
+          password: userData.password || '',
           confirmPassword: '',
         });
       } catch (error) {
@@ -128,6 +128,7 @@ const Settings = () => {
           email: formData.emailAddress,
           bio: formData.bio,
           password: formData.password,
+          password_confirmation: formData.confirmPassword
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -281,7 +282,8 @@ const Settings = () => {
                       </div>
                     </div>
 
-                      <div className="mb-5.5">
+                    <div className="mb-5.5 flex flex-col gap-5.5 sm:flex-row">
+                      <div className="w-full sm:w-1/2">
                         <label
                           className="mb-3 block text-sm font-medium text-black dark:text-white"
                           htmlFor="password"
@@ -320,8 +322,7 @@ const Settings = () => {
                         </div>
                         <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">(اختياري - اتركه فارغًا إذا لم ترغب في التغيير)</p>
                       </div>
-
-                      <div className="mb-5.5">
+                      <div className="w-full sm:w-1/2">
                         <label
                           className="mb-3 block text-sm font-medium text-black dark:text-white"
                           htmlFor="confirmPassword"
@@ -355,6 +356,7 @@ const Settings = () => {
                           />
                         </div>
                       </div>
+                    </div>
 
                     <div className="mb-5.5">
                       <label
@@ -427,7 +429,7 @@ const Settings = () => {
                 <h3 className="font-medium text-black dark:text-white">صورتي</h3>
               </div>
               {isLoading ? (
-<Loader />
+                <Loader />
               ) : (
                 <div className="p-7">
                   <div className="mb-4 flex items-center gap-3">
