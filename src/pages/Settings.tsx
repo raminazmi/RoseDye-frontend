@@ -22,13 +22,14 @@ const Settings = () => {
     phoneNumber: '',
     emailAddress: '',
     bio: '',
-    password: '',
+    password: '', 
     confirmPassword: '',
   });
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -51,8 +52,8 @@ const Settings = () => {
           phoneNumber: userData.phone || '',
           emailAddress: userData.email || '',
           bio: userData.bio || '',
-          password: '',
-          confirmPassword: '', 
+          password: userData.password || '', 
+          confirmPassword: '',
         });
       } catch (error) {
         toast.error('فشل في جلب بيانات المستخدم');
@@ -110,13 +111,10 @@ const Settings = () => {
       toast.error('انتهت الجلسة، يرجى إعادة تسجيل الدخول');
       return;
     }
-
     if (formData.password && formData.password !== formData.confirmPassword) {
-      setPasswordError('كلمات المرور غير متطابقة');
+      toast.error('كلمة المرور غير متطابقة');
       return;
     }
-    setPasswordError(null);
-
     setIsSaving(true);
     try {
       const response = await axios.put(
@@ -126,7 +124,6 @@ const Settings = () => {
           phone: formData.phoneNumber,
           email: formData.emailAddress,
           bio: formData.bio,
-          password: formData.password || undefined,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -150,7 +147,6 @@ const Settings = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
   const avatarUrl = user?.avatar ? `https://rosedye-backend-production.up.railway.app/${user.avatar}` : userSix;
 
   return (
@@ -280,89 +276,80 @@ const Settings = () => {
                       </div>
                     </div>
 
-                    <div className="mb-5.5">
-                      <label
-                        className="mb-3 block text-sm font-medium text-black dark:text-white"
-                        htmlFor="password"
-                      >
-                        كلمة المرور
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-4.5 top-4">
-                          <svg
-                            className="fill-current"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M9.99967 14.1666C11.8406 14.1666 13.333 12.6742 13.333 10.8333C13.333 8.99242 11.8406 7.5 9.99967 7.5C8.15877 7.5 6.66634 8.99242 6.66634 10.8333C6.66634 12.6742 8.15877 14.1666 9.99967 14.1666Z"
-                              fill=""
-                            />
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M5.83301 5.83329C4.72685 5.83329 3.82687 6.48625 3.39131 7.45179L0.833008 12.5V15.8333C0.833008 16.6065 1.46018 17.2337 2.23334 17.2337H17.7663C18.5395 17.2337 19.1663 16.6065 19.1663 15.8333V12.5L16.608 7.45179C16.1724 6.48625 15.2725 5.83329 14.1663 5.83329H5.83301ZM1.66634 15.8333V12.9706L4.22465 7.92185C4.66021 6.95631 5.56019 6.30335 6.66634 6.30335H13.333C14.4392 6.30335 15.3392 6.95631 15.7747 7.92185L18.333 12.9706V15.8333H1.66634Z"
-                              fill=""
-                            />
-                          </svg>
-                        </span>
-                        <input
-                          className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
-                          type="password"
-                          name="password"
-                          id="password"
-                          value={formData.password}
-                          onChange={handleInputChange}
-                          placeholder="كلمة المرور"
-                        />
+                      <div className="mb-5.5">
+                        <label
+                          className="mb-3 block text-sm font-medium text-black dark:text-white"
+                          htmlFor="password"
+                        >
+                          كلمة المرور الجديدة
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4.5 top-4 cursor-pointer" onClick={togglePasswordVisibility}>
+                            <svg
+                              className="fill-current"
+                              width="22"
+                              height="22"
+                              viewBox="0 0 22 22"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.1547 6.80626V5.91251C16.1547 3.16251 14.0922 0.825009 11.4797 0.618759C10.0359 0.481259 8.59219 0.996884 7.52656 1.95938C6.46094 2.92188 5.84219 4.29688 5.84219 5.70626V6.80626C3.84844 7.18438 2.33594 8.93751 2.33594 11.0688V17.2906C2.33594 19.5594 4.19219 21.3813 6.42656 21.3813H15.5016C17.7703 21.3813 19.6266 19.525 19.6266 17.2563V11C19.6609 8.93751 18.1484 7.21876 16.1547 6.80626ZM8.55781 3.09376C9.31406 2.40626 10.3109 2.06251 11.3422 2.16563C13.1641 2.33751 14.6078 3.98751 14.6078 5.91251V6.70313H7.53341V5.67188C7.53341 4.70938 7.93341 3.78126 8.55781 3.09376ZM18.1141 17.2906C18.1141 18.7 16.9453 19.8688 15.5359 19.8688H6.46094C5.05156 19.8688 3.91719 18.7344 3.91719 17.325V11.0688C3.91719 9.52189 5.15469 8.28438 6.70156 8.28438H15.5016C17.0494 8.28438 18.3203 9.52188 18.3203 11.0688V17.2906H18.1141Z"
+                                fill=""
+                              />
+                              <path
+                                d="M11.0001 11.9219C9.38442 11.9219 8.07818 13.2281 8.07818 14.8438C8.07818 16.4594 9.38442 17.7656 11.0001 17.7656C12.6157 17.7656 13.922 16.4594 13.922 14.8438C13.922 13.2281 12.6157 11.9219 11.0001 11.9219ZM11.0001 16.3313C10.0266 16.3313 9.26255 15.5672 9.26255 14.5938C9.26255 13.6203 10.0266 12.8563 11.0001 12.8563C11.9736 12.8563 12.7376 13.6203 12.7376 14.5938C12.7376 15.5672 11.9736 16.3313 11.0001 16.3313Z"
+                                fill=""
+                              />
+                            </svg>
+                          </span>
+                          <input
+                            className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                            type={showPassword ? "text" : "password"}
+                            name="password"
+                            id="password"
+                            value={formData.password}
+                            onChange={handleInputChange}
+                            placeholder="أدخل كلمة المرور الجديدة"
+                          />
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">(اختياري - اتركه فارغًا إذا لم ترغب في التغيير)</p>
                       </div>
-                      {passwordError && <span className="text-red-500 text-sm mt-1 block">{passwordError}</span>}
-                    </div>
 
-                    <div className="mb-5.5">
-                      <label
-                        className="mb-3 block text-sm font-medium text-black dark:text-white"
-                        htmlFor="confirmPassword"
-                      >
-                        تأكيد كلمة المرور
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-4.5 top-4">
-                          <svg
-                            className="fill-current"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M9.99967 14.1666C11.8406 14.1666 13.333 12.6742 13.333 10.8333C13.333 8.99242 11.8406 7.5 9.99967 7.5C8.15877 7.5 6.66634 8.99242 6.66634 10.8333C6.66634 12.6742 8.15877 14.1666 9.99967 14.1666Z"
-                              fill=""
-                            />
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M5.83301 5.83329C4.72685 5.83329 3.82687 6.48625 3.39131 7.45179L0.833008 12.5V15.8333C0.833008 16.6065 1.46018 17.2337 2.23334 17.2337H17.7663C18.5395 17.2337 19.1663 16.6065 19.1663 15.8333V12.5L16.608 7.45179C16.1724 6.48625 15.2725 5.83329 14.1663 5.83329H5.83301ZM1.66634 15.8333V12.9706L4.22465 7.92185C4.66021 6.95631 5.56019 6.30335 6.66634 6.30335H13.333C14.4392 6.30335 15.3392 6.95631 15.7747 7.92185L18.333 12.9706V15.8333H1.66634Z"
-                              fill=""
-                            />
-                          </svg>
-                        </span>
-                        <input
-                          className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
-                          type="password"
-                          name="confirmPassword"
-                          id="confirmPassword"
-                          value={formData.confirmPassword}
-                          onChange={handleInputChange}
-                          placeholder="تأكيد كلمة المرور"
-                        />
+                      <div className="mb-5.5">
+                        <label
+                          className="mb-3 block text-sm font-medium text-black dark:text-white"
+                          htmlFor="confirmPassword"
+                        >
+                          تأكيد كلمة المرور
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4.5 top-4">
+                            <svg
+                              className="fill-current"
+                              width="22"
+                              height="22"
+                              viewBox="0 0 22 22"
+                              fill="none"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.1547 6.80626V5.91251C16.1547 3.16251 14.0922 0.825009 11.4797 0.618759C10.0359 0.481259 8.59219 0.996884 7.52656 1.95938C6.46094 2.92188 5.84219 4.29688 5.84219 5.70626V6.80626C3.84844 7.18438 2.33594 8.93751 2.33594 11.0688V17.2906C2.33594 19.5594 4.19219 21.3813 6.42656 21.3813H15.5016C17.7703 21.3813 19.6266 19.525 19.6266 17.2563V11C19.6609 8.93751 18.1484 7.21876 16.1547 6.80626ZM8.55781 3.09376C9.31406 2.40626 10.3109 2.06251 11.3422 2.16563C13.1641 2.33751 14.6078 3.98751 14.6078 5.91251V6.70313H7.53341V5.67188C7.53341 4.70938 7.93341 3.78126 8.55781 3.09376ZM18.1141 17.2906C18.1141 18.7 16.9453 19.8688 15.5359 19.8688H6.46094C5.05156 19.8688 3.91719 18.7344 3.91719 17.325V11.0688C3.91719 9.52189 5.15469 8.28438 6.70156 8.28438H15.5016C17.0494 8.28438 18.3203 9.52188 18.3203 11.0688V17.2906H18.1141Z"
+                                fill=""
+                              />
+                            </svg>
+                          </span>
+                          <input
+                            className="w-full rounded border border-stroke bg-gray py-3 pl-11.5 pr-4.5 text-black focus:border-primary focus-visible:outline-none dark:border-strokedark dark:bg-meta-4 dark:text-white dark:focus:border-primary"
+                            type={showPassword ? "text" : "password"}
+                            name="confirmPassword"
+                            id="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={handleInputChange}
+                            placeholder="أعد إدخال كلمة المرور الجديدة"
+                          />
+                        </div>
                       </div>
-                      {passwordError && <span className="text-red-500 text-sm mt-1 block">{passwordError}</span>}
-                    </div>
 
                     <div className="mb-5.5">
                       <label
@@ -435,7 +422,7 @@ const Settings = () => {
                 <h3 className="font-medium text-black dark:text-white">صورتي</h3>
               </div>
               {isLoading ? (
-                <Loader />
+<Loader />
               ) : (
                 <div className="p-7">
                   <div className="mb-4 flex items-center gap-3">
