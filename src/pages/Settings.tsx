@@ -111,10 +111,13 @@ const Settings = () => {
       toast.error('انتهت الجلسة، يرجى إعادة تسجيل الدخول');
       return;
     }
+
+    // التحقق من تطابق كلمة المرور
     if (formData.password && formData.password !== formData.confirmPassword) {
       toast.error('كلمة المرور غير متطابقة');
       return;
     }
+
     setIsSaving(true);
     try {
       const response = await axios.put(
@@ -124,12 +127,14 @@ const Settings = () => {
           phone: formData.phoneNumber,
           email: formData.emailAddress,
           bio: formData.bio,
+          password: formData.password,
         },
         {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
       setUser(response.data.user);
+      setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
       toast.success('تم تحديث الملف الشخصي بنجاح');
     } catch (error: any) {
       if (error.response) {
