@@ -62,6 +62,7 @@ const SignIn: React.FC = () => {
       setLoading(false);
     }
   };
+
   const filteredCountries = countries.filter((country) =>
     country.arabicName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     country.code.toLowerCase().includes(searchTerm.toLowerCase())
@@ -118,7 +119,7 @@ const SignIn: React.FC = () => {
                     placeholder="123456789"
                     className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-3 pr-10 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, ''))}
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').replace(/^0/, ''))} // Updated here
                     required
                   />
                   <span className="absolute right-3 top-2.5">
