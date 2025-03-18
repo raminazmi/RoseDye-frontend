@@ -123,12 +123,10 @@ const ChartTwo: React.FC = () => {
         const data = await response.json();
         console.log(`${timeFrame} Data:`, data);
 
-        // التحقق من البيانات داخل كائن "data" أو مباشرة
         const apiData = data.data || data;
         const revenueData = apiData.revenue || apiData.income || [];
         const subscriptionsData = apiData.subscriptions || apiData.subscribers || [];
 
-        // إذا كانت البيانات فارغة، استخدم قيم افتراضية بدلاً من رمي خطأ
         if (!revenueData.length || !subscriptionsData.length) {
           console.warn('البيانات فارغة، يتم استخدام قيم افتراضية');
         }
@@ -199,7 +197,7 @@ const ChartTwo: React.FC = () => {
 
   return (
     <div className="col-span-12 rounded-sm border border-stroke bg-white p-7.5 shadow-default dark:border-strokedark dark:bg-boxdark xl:col-span-4">
-      <div className="mb-4 flex-col justify-center items-center gap-4  ">
+      <div className="mb-4 flex-col justify-center items-center gap-4">
         <div className="flex mb-3 items-center justify-center rounded-md gap-2 bg-whiter p-1.5 dark:bg-meta-4">
           <button
             onClick={() => handleTimeFrameChange('this_week')}

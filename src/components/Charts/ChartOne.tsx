@@ -260,10 +260,9 @@ const ChartOne: React.FC = () => {
             </div>
           </div>
           <p className="text-sm font-medium">{dateRange}</p>
-
         </div>
         <div className="flex w-full max-w-45 justify-end">
-          <div className="inline-flex items-center gap-2  rounded-md bg-whiter p-1.5 dark:bg-meta-4">
+          <div className="inline-flex items-center gap-2 rounded-md bg-whiter p-1.5 dark:bg-meta-4">
             <button
               onClick={() => handleTimeFrameChange('day')}
               className={`rounded py-1 px-3 text-xs font-medium text-black shadow-card hover:bg-white hover:shadow-card dark:text-white dark:hover:bg-boxdark ${timeFrame === 'day' ? 'bg-white dark:bg-boxdark' : ''}`}
@@ -285,20 +284,15 @@ const ChartOne: React.FC = () => {
           </div>
         </div>
       </div>
-      {loading ?
+      {loading ? (
         <Loader />
-        :
-      <div>
+      ) : (
+        <div>
           <div id="chartOne" className="-ml-5">
-            <ReactApexChart
-              options={options}
-              series={series}
-              type="area"
-              height={350}
-            />
+            <ReactApexChart options={options} series={series} type="area" height={350} />
           </div>
-      </div>
-      }
+        </div>
+      )}
     </div>
   );
 };

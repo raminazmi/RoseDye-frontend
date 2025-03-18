@@ -20,13 +20,13 @@ const Pagination: React.FC<PaginationProps> = ({
     return (
         <div className="flex flex-col sm:flex-row justify-between items-center py-4 px-6 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
             <div className="mb-4 sm:mb-0">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mr-2">
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300 ml-2">
                     عناصر لكل صفحة:
                 </label>
                 <select
                     value={itemsPerPage}
                     onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-                    className="rounded-md border border-stroke bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 p-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="rounded-md border border-stroke bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 p-1 py-0 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 >
                     <option value={5}>5</option>
                     <option value={10}>10</option>

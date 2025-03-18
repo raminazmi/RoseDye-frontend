@@ -97,12 +97,6 @@ const OTPForm: React.FC = () => {
     setError(null);
 
     const code = otp.join('');
-    if (!phone || !tempToken) {
-      setError('بيانات التحقق غير موجودة');
-      setLoading(false);
-      return;
-    }
-
     try {
       const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/verify-otp', {
         method: 'POST',
@@ -112,7 +106,11 @@ const OTPForm: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json();
-        setError(errorData.message || 'رمز التحقق غير صحيح');
+        if (errorData.errors) {
+          setError(Object.values(errorData.errors).join(', '));
+        } else {
+          setError(errorData.message || 'رمز التحقق غير صحيح');
+        }
         setLoading(false);
         return;
       }

@@ -9,11 +9,9 @@ import Pagination from '../../components/Pagination';
 interface Invoice {
   id: number;
   invoice_number: string;
-  issue_date: string;
-  due_date: string;
+  date: string; // تعديل ليعكس الحقل الجديد
   amount: number;
-  status: string;
-  client: { name: string };
+  client: { subscription_number: string }; // تعديل ليعكس رقم الاشتراك فقط
 }
 
 const Invoices: React.FC = () => {
@@ -22,7 +20,6 @@ const Invoices: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [selectedInvoiceId, setSelectedInvoiceId] = useState<number | null>(null);
-  const [editingStatusId, setEditingStatusId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -48,7 +45,7 @@ const Invoices: React.FC = () => {
         setInvoices(data.data);
         setTotalItems(data.total || 0);
       } else {
-        toast.error(data.message || 'فشل في جلب بيانات الفواتير');
+        toast.error(data.message || 'فشل في جلب TOOL بيانات الفواتير');
       }
     } catch (error) {
       console.error('Error fetching invoices:', error);
@@ -98,78 +95,8 @@ const Invoices: React.FC = () => {
     }
   };
 
-  const handleStatusChange = async (invoiceId: number, newStatus: string) => {
-    try {
-      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/invoices/${invoiceId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-        body: JSON.stringify({ status: newStatus }),
-      });
-
-      const data = await response.json();
-      if (response.ok && data.status) {
-        toast.success('تم تحديث حالة الفاتورة بنجاح');
-        fetchInvoices();
-      } else {
-        toast.error(data.message || 'حدث خطأ أثناء تحديث الحالة');
-      }
-    } catch (error) {
-      console.error('Error updating status:', error);
-      toast.error('حدث خطأ أثناء الاتصال بالخادم');
-    } finally {
-      setEditingStatusId(null);
-    }
-  };
-
-  const getStatusDisplay = (invoice: Invoice) => {
-    if (editingStatusId === invoice.id) {
-      return (
-        <select
-          value={invoice.status}
-          onChange={(e) => handleStatusChange(invoice.id, e.target.value)}
-          className="w-full rounded-md border border-gray-300 bg-white py-1.5 px-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:focus:ring-blue-400 transition-all duration-200"
-        >
-          <option value="paid">مدفوعة</option>
-          <option value="unpaid">غير مدفوعة</option>
-        </select>
-      );
-    }
-
-    switch (invoice.status.toLowerCase()) {
-      case 'paid':
-        return (
-          <span
-            onClick={() => setEditingStatusId(invoice.id)}
-            className="inline-block bg-green-500 text-white text-sm font-medium px-3 py-1 rounded-md cursor-pointer hover:bg-green-600 transition-all duration-200 relative group dark:bg-green-600 dark:hover:bg-green-700"
-          >
-            مدفوعة
-            <span className="absolute hidden group-hover:block bg-gray-700 text-white text-xs rounded py-1 px-2 -top-8 left-1/2 transform -translate-x-1/2 shadow-md">
-              انقر لتغيير الحالة
-            </span>
-          </span>
-        );
-      case 'unpaid':
-        return (
-          <span
-            onClick={() => setEditingStatusId(invoice.id)}
-            className="inline-block bg-red-500 text-white text-sm font-medium px-3 py-1 rounded-md cursor-pointer hover:bg-red-600 transition-all duration-200 relative group dark:bg-red-600 dark:hover:bg-red-700"
-          >
-            غير مدفوعة
-            <span className="absolute hidden group-hover:block bg-gray-700 text-white text-xs rounded py-1 px-2 -top-8 left-1/2 transform -translate-x-1/2 shadow-md">
-              انقر لتغيير الحالة
-            </span>
-          </span>
-        );
-      default:
-        return (
-          <span className="inline-block bg-gray-500 text-white px-2 py-1 rounded-sm dark:bg-gray-600">
-            {invoice.status}
-          </span>
-        );
-    }
+  const formatAmount = (amount: number) => {
+    return amount.toLocaleString();
   };
 
   const formatDate = (dateString: string) => {
@@ -211,22 +138,17 @@ const Invoices: React.FC = () => {
 
       <div className="p-6">
         {loading ? (
-              <Loader />
+          <Loader />
         ) : (
           <>
             <div className="overflow-x-auto" ref={tableRef}>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
-                انقر على الحالة لتغييرها بسهولة (مدفوعة/غير مدفوعة)
-              </p>
               <table className="table-auto w-full bg-white dark:bg-gray-800 rounded-md shadow-sm">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-700">
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">رقم الفاتورة</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">العميل</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">تاريخ الإصدار</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">تاريخ الاستحقاق</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">المبلغ</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">الحالة</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الفاتورة</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الاشتراك</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">التاريخ</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">المبلغ</th>
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">الإجراءات</th>
                   </tr>
                 </thead>
@@ -240,19 +162,13 @@ const Invoices: React.FC = () => {
                         {invoice.invoice_number}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {invoice.client.name}
+                        {invoice.client.subscription_number}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {formatDate(invoice.issue_date)}
+                        {formatDate(invoice.date)}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {formatDate(invoice.due_date)}
-                      </td>
-                      <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {invoice.amount}
-                      </td>
-                      <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
-                        {getStatusDisplay(invoice)}
+                        {formatAmount(invoice.amount)}  د.ك
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center flex justify-center items-center gap-2">
                         <button

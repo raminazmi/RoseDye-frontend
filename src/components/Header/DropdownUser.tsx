@@ -53,7 +53,7 @@ const DropdownUser = () => {
     return user.name.charAt(0).toUpperCase();
   };
 
-  const avatarUrl = user?.avatar ? `https://rosedye-backend-production.up.railway.app/${user.avatar}` : null;
+  const avatarUrl = user?.avatar ? `http://localhost:8000/${user.avatar}` : null;
 
   return (
     <ClickOutside onClick={() => setDropdownOpen(false)} className="relative">
@@ -87,7 +87,7 @@ const DropdownUser = () => {
       </Link>
 
       {dropdownOpen && (
-        <div className="absolute right-0 mt-3 w-64 flex flex-col rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
+        <div className="absolute -left-3 mt-2 w-46 flex flex-col rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800">
           <ul className="flex flex-col gap-2 p-4">
             <li>
               <Link

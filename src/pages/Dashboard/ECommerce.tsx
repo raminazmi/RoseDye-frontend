@@ -7,19 +7,17 @@ import Loader from '../../common/Loader';
 
 interface Statistics {
   total_clients: number;
-  active_subscriptions: number;
   total_revenue: number;
   total_invoices: number;
-  paid_invoices: number;
-  unpaid_invoices: number;
   recent_clients: any[];
   upcoming_renewals: any[];
   clients_rate: string;
   subscriptions_rate: string;
   revenue_rate: string;
   total_invoices_rate: string;
-  paid_invoices_rate: string;
-  unpaid_invoices_rate: string;
+  active_subscriptions: number;
+  expired_subscriptions: number;
+  canceled_subscriptions: number;
 }
 
 const ECommerce: React.FC = () => {
@@ -70,17 +68,9 @@ const ECommerce: React.FC = () => {
     fetchStatistics();
   }, []);
 
-  if (loading) {
-    return <Loader />;
-  }
-
-  if (error) {
-    return <div className="text-center text-red-500 p-8">حدث خطأ: {error}</div>;
-  }
-
-  if (!statistics) {
-    return <div className="text-center p-8">لا توجد بيانات متاحة</div>;
-  }
+  if (loading) return <Loader />;
+  if (error) return <div className="text-center text-red-500 p-8">حدث خطأ: {error}</div>;
+  if (!statistics) return <div className="text-center p-8">لا توجد بيانات متاحة</div>;
 
   const expectedRevenue = 100;
   const expectedInvoices = 100;
@@ -88,14 +78,10 @@ const ECommerce: React.FC = () => {
 
   const revenueRate = ((statistics.total_revenue / expectedRevenue) * 100).toFixed(2);
   const totalInvoicesRate = statistics.total_invoices_rate;
-  const paidInvoicesRate = statistics.paid_invoices_rate;
-  const unpaidInvoicesRate = statistics.unpaid_invoices_rate;
   const subscriptionsRate = ((statistics.active_subscriptions / expectedSubscriptions) * 100).toFixed(2);
 
   const revenueUp = statistics.total_revenue > expectedRevenue;
   const totalInvoicesUp = parseFloat(statistics.total_invoices_rate) > 0;
-  const paidInvoicesUp = parseFloat(statistics.paid_invoices_rate) > 0;
-  const unpaidInvoicesUp = parseFloat(statistics.unpaid_invoices_rate) > 0;
   const subscriptionsUp = statistics.active_subscriptions > expectedSubscriptions;
 
   return (
@@ -122,31 +108,38 @@ const ECommerce: React.FC = () => {
         </CardDataStats>
 
         <CardDataStats
-          title="الفواتير المدفوعة"
-          total={`${statistics.paid_invoices}`}
-          rate={`${paidInvoicesRate}%`}
-          levelUp={paidInvoicesUp}
-          levelDown={!paidInvoicesUp}
-        >
-          <FaFileInvoice className="fill-primary dark:fill-white w-6 h-6" />
-        </CardDataStats>
-
-        <CardDataStats
-          title="الفواتير غير المدفوعة"
-          total={`${statistics.unpaid_invoices}`}
-          rate={`${unpaidInvoicesRate}%`}
-          levelUp={unpaidInvoicesUp}
-          levelDown={!unpaidInvoicesUp}
-        >
-          <FaFileInvoice className="fill-primary dark:fill-white w-6 h-6" />
-        </CardDataStats>
-
-        <CardDataStats
           title="عدد المشتركين"
           total={statistics.active_subscriptions.toString()}
           rate={`${subscriptionsRate}%`}
           levelUp={subscriptionsUp}
           levelDown={!subscriptionsUp}
+        >
+          <FaUsers className="fill-primary dark:fill-white w-6 h-6" />
+        </CardDataStats>
+
+        <CardDataStats
+          title="المشتركين الفعالين"
+          total={statistics.active_subscriptions.toString()}
+          rate=""
+          levelUp={false}
+        >
+          <FaUsers className="fill-primary dark:fill-white w-6 h-6" />
+        </CardDataStats>
+
+        <CardDataStats
+          title="المشتركين المنتهيين"
+          total={statistics.expired_subscriptions.toString()}
+          rate=""
+          levelUp={false}
+        >
+          <FaUsers className="fill-primary dark:fill-white w-6 h-6" />
+        </CardDataStats>
+
+        <CardDataStats
+          title="المشتركين الموقوفين"
+          total={statistics.canceled_subscriptions.toString()}
+          rate=""
+          levelUp={false}
         >
           <FaUsers className="fill-primary dark:fill-white w-6 h-6" />
         </CardDataStats>

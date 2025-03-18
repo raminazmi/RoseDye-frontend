@@ -1,25 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import Select from 'react-select';
 
 interface FormData {
     client_id: string;
-    issue_date: string;
-    due_date: string;
+    date: string; // إضافة حقل التاريخ
     amount: string;
-    description: string;
 }
 
 interface FormErrors {
     client_id?: string;
-    issue_date?: string;
-    due_date?: string;
+    date?: string; // إضافة حقل التاريخ
     amount?: string;
-    description?: string;
 }
 
 interface Client {
     id: number;
-    name: string;
+    subscription_number: string;
 }
 
 interface EditInvoiceFormProps {
@@ -31,15 +28,14 @@ interface EditInvoiceFormProps {
 const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceUpdated, onClose }) => {
     const [formData, setFormData] = useState<FormData>({
         client_id: '',
-        issue_date: '',
-        due_date: '',
+        date: '', 
         amount: '',
-        description: '',
     });
+    const [invoiceNumber, setInvoiceNumber] = useState<string>('');
     const [errors, setErrors] = useState<FormErrors>({});
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoadingClients, setIsLoadingClients] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false); // حالة لـ "حفظ التعديلات"
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchClients();
@@ -59,7 +55,6 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                     Authorization: `Bearer ${token}`,
                 },
             });
-
             const data = await response.json();
             if (data.status) {
                 setClients(data.data);
@@ -84,11 +79,10 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 const invoice = data.data;
                 setFormData({
                     client_id: invoice.client_id.toString(),
-                    issue_date: invoice.issue_date,
-                    due_date: invoice.due_date,
-                    amount: invoice.amount.toString(),
-                    description: invoice.description || '',
+                    date: new Date(invoice.date).toISOString().split('T')[0], // Format date as YYYY-MM-DD
+                    amount: invoice.amount.toLocaleString(),
                 });
+                setInvoiceNumber(invoice.invoice_number);
             }
         } catch (error) {
             console.error('Error fetching invoice:', error);
@@ -99,18 +93,8 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
     const validate = (): FormErrors => {
         const newErrors: FormErrors = {};
         if (!formData.client_id) newErrors.client_id = 'العميل مطلوب';
-        if (!formData.issue_date) newErrors.issue_date = 'تاريخ الإصدار مطلوب';
-        if (!formData.due_date) newErrors.due_date = 'تاريخ الاستحقاق مطلوب';
+        if (!formData.date) newErrors.date = 'التاريخ مطلوب'; // التحقق من حقل التاريخ
         if (!formData.amount.trim()) newErrors.amount = 'المبلغ مطلوب';
-
-        if (formData.issue_date && formData.due_date) {
-            const issueDate = new Date(formData.issue_date);
-            const dueDate = new Date(formData.due_date);
-            if (issueDate > dueDate) {
-                newErrors.issue_date = 'تاريخ الإصدار يجب أن يكون قبل تاريخ الاستحقاق';
-            }
-        }
-
         return newErrors;
     };
 
@@ -139,14 +123,13 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    ...formData,
-                    amount: parseFloat(formData.amount),
+                    client_id: formData.client_id,
+                    date: formData.date, // إرسال التاريخ المدخل
+                    amount: parseFloat(formData.amount.replace(/,/g, '')),
                 }),
             });
 
             const data = await response.json();
-            console.log('Response data:', data);
-
             if (response.ok && data.status) {
                 toast.success('تم تعديل الفاتورة بنجاح');
                 onInvoiceUpdated();
@@ -161,9 +144,36 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
         }
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const formatAmount = (value: string) => {
+        const numericValue = value.replace(/[^0-9]/g, '');
+        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        if (name === 'amount') {
+            setFormData({ ...formData, [name]: formatAmount(value) });
+        } else if (name === 'date') {
+            // Ensure the date is in YYYY-MM-DD format
+            const formattedDate = new Date(value).toISOString().split('T')[0];
+            setFormData({ ...formData, [name]: formattedDate });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
+    };
+
+    const handleClientSelect = (selectedOption: any) => {
+        setFormData({ ...formData, client_id: selectedOption ? selectedOption.value : '' });
+    };
+
+    const clientOptions = clients.map(client => ({
+        value: client.id.toString(),
+        label: client.subscription_number, // عرض رقم الاشتراك فقط
+    }));
+
+    const filterOption = (option: any, inputValue: string) => {
+        const searchValue = inputValue.toLowerCase();
+        return option.label.toLowerCase().includes(searchValue);
     };
 
     return (
@@ -179,84 +189,80 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">العميل</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الفاتورة</label>
+                    <input
+                        type="text"
+                        value={invoiceNumber}
+                        disabled
+                        className="w-full rounded-md border border-gray-300 bg-gray-100 py-1.5 sm:py-2 px-3 text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 transition-all duration-200"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الاشتراك</label>
                     {isLoadingClients ? (
                         <div className="w-full rounded-md border border-gray-300 bg-gray-100 dark:bg-gray-700 h-10 flex items-center justify-center">
                             <span className="text-gray-500 dark:text-gray-400 text-sm">جارٍ التحميل...</span>
                         </div>
                     ) : (
-                        <select
-                            name="client_id"
-                            value={formData.client_id}
-                            onChange={handleInputChange}
-                            className="w-full rounded-md border border-gray-300 bg-white sm:py-[6px] sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
-                        >
-                            <option value="">اختر العميل</option>
-                            {clients.map((client) => (
-                                <option key={client.id} value={client.id}>
-                                    {client.name}
-                                </option>
-                            ))}
-                        </select>
+                        <Select
+                            options={clientOptions}
+                            onChange={handleClientSelect}
+                            value={clientOptions.find(option => option.value === formData.client_id) || null}
+                            placeholder="ابحث عن رقم الاشتراك..."
+                            isClearable
+                            isSearchable
+                            filterOption={filterOption}
+                            className="text-sm"
+                            styles={{
+                                control: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: 'white',
+                                    borderColor: '#d1d5db',
+                                    '&:hover': { borderColor: '#9ca3af' },
+                                }),
+                                menu: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: 'white',
+                                }),
+                                option: (provided, state) => ({
+                                    ...provided,
+                                    backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#e5e7eb' : 'white',
+                                    color: state.isSelected ? 'white' : 'black',
+                                }),
+                            }}
+                        />
                     )}
                     {errors.client_id && (
                         <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.client_id}</span>
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ الإصدار</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">التاريخ</label>
                     <input
                         type="date"
-                        name="issue_date"
-                        value={formData.issue_date}
+                        name="date"
+                        value={formData.date}
                         onChange={handleInputChange}
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
-                    {errors.issue_date && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.issue_date}</span>
+                    {errors.date && (
+                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.date}</span>
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ الاستحقاق</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">قيمة الفاتورة</label>
                     <input
-                        type="date"
-                        name="due_date"
-                        value={formData.due_date}
-                        onChange={handleInputChange}
-                        className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
-                    />
-                    {errors.due_date && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.due_date}</span>
-                    )}
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المبلغ</label>
-                    <input
-                        type="number"
+                        type="text"
                         name="amount"
-                        placeholder="ادخل المبلغ"
+                        placeholder="ادخل المبلغ (مثال: 1,234)"
                         value={formData.amount}
                         onChange={handleInputChange}
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
                     {errors.amount && (
                         <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount}</span>
-                    )}
-                </div>
-                <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الوصف</label>
-                    <input
-                        type="text"
-                        name="description"
-                        placeholder="ادخل الوصف"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
-                    />
-                    {errors.description && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.description}</span>
                     )}
                 </div>
             </div>
@@ -268,9 +274,9 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                     disabled={isSubmitting}
                 >
                     {!isSubmitting ? (
-                        <span className="">حفظ التعديلات</span>
+                        <span>حفظ التعديلات</span>
                     ) : (
-                            <span className="flex items-center gap-2 py-1">
+                        <span className="flex items-center gap-2 py-1">
                             <span className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
                             <p className="text-xs">جاري الحفظ</p>
                         </span>
@@ -281,7 +287,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                     onClick={onClose}
                     className="flex w-full sm:w-1/2 justify-center rounded bg-red-700 p-3 font-medium text-white hover:bg-opacity-90"
                 >
-                    <span className="">إلغاء</span>
+                    <span>إلغاء</span>
                 </button>
             </div>
         </form>

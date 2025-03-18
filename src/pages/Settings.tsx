@@ -153,7 +153,7 @@ const Settings = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const avatarUrl = user?.avatar ? `https://rosedye-backend-production.up.railway.app/${user.avatar}` : userSix;
+  const avatarUrl = user?.avatar ? `http://localhost:8000/${user.avatar}` : userSix;
 
   return (
     <>

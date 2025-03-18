@@ -14,6 +14,7 @@ interface Client {
   renewal_balance: number;
   email: string;
   subscription_number: string;
+  start_date: string;
 }
 
 const Clients: React.FC = () => {
@@ -153,18 +154,18 @@ const Clients: React.FC = () => {
 
       <div className="p-6">
         {loading ? (
-              <Loader />
+          <Loader />
         ) : (
           <>
             <div className="overflow-x-auto" ref={tableRef}>
               <table className="table-auto w-full bg-white dark:bg-gray-800 rounded-md shadow-sm">
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-700">
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">رقم الاشتراك</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">الاسم</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">الهاتف</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">الرصيد الحالي</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">رصيد التجديد</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الاشتراك</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الاسم</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الهاتف</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الرصيد الحالي</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رصيد التجديد</th>
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">الإجراءات</th>
                   </tr>
                 </thead>
@@ -184,10 +185,10 @@ const Clients: React.FC = () => {
                         {client.phone}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.current_balance}
+                        {client.current_balance} د.ك
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.renewal_balance}
+                        {client.renewal_balance} د.ك
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center flex justify-center items-center gap-2">
                         <button

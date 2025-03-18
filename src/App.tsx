@@ -24,6 +24,28 @@ import { useNavigate } from 'react-router-dom';
 import Breadcrumb from './components/Breadcrumbs/Breadcrumb';
 import NotFoundPage from './NotFoundPage';
 
+// مكون حماية المسارات
+const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const { auth } = useAuth();
+
+  if (!auth) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+// مكون حماية المسارات الإدارية
+const AdminProtectedRoute = ({ children }: { children: JSX.Element }) => {
+  const { auth, user } = useAuth();
+
+  if (!auth || user?.role !== 'admin') {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
+
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
   const { auth, user } = useAuth();
@@ -48,7 +70,6 @@ function App() {
     }
   }, [auth, navigate, pathname]);
 
-
   const ProtectedSubscriptionDetails = () => {
     const { id } = useParams<{ id: string }>();
     const userId = localStorage.getItem('client_id');
@@ -68,7 +89,6 @@ function App() {
     );
   };
 
-
   return loading ? (
     <Loader />
   ) : (
@@ -79,101 +99,125 @@ function App() {
             <Route
               index
               element={
-                <>
-                  <PageTitle title="لوحة تحكم مصبغة الورد" />
-                  <ECommerce />
-                </>
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="لوحة تحكم مصبغة الورد" />
+                    <ECommerce />
+                  </>
+                </AdminProtectedRoute>
               }
             />
             <Route
               path="/profile"
               element={
-                <>
-                  <PageTitle title="الملف الشخصي | لوحة التحكم مصبغة الورد" />
-                  <Profile />
-                </>
+                <ProtectedRoute>
+                  <>
+                    <PageTitle title="الملف الشخصي | لوحة التحكم مصبغة الورد" />
+                    <Profile />
+                  </>
+                </ProtectedRoute>
               }
             />
             <Route
               path="/clients"
               element={
-                <>
-                  <PageTitle title="اضافة عملاء | لوحة التحكم مصبغة الورد" />
-                  <Clients />
-                </>
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="اضافة عملاء | لوحة التحكم مصبغة الورد" />
+                    <Clients />
+                  </>
+                </AdminProtectedRoute>
               }
             />
             <Route
               path="/invoices"
               element={
-                <>
-                  <PageTitle title="اضافة الفواتير | لوحة التحكم مصبغة الورد" />
-                  <Invoices />
-                </>
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="اضافة الفواتير | لوحة التحكم مصبغة الورد" />
+                    <Invoices />
+                  </>
+                </AdminProtectedRoute>
               }
             />
             <Route
               path="/forms/form-elements"
               element={
-                <>
-                  <PageTitle title="اضافة عملاء | لوحة التحكم مصبغة الورد" />
-                  <FormElements />
-                </>
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="اضافة عملاء | لوحة التحكم مصبغة الورد" />
+                    <FormElements />
+                  </>
+                </AdminProtectedRoute>
               }
             />
             <Route
               path="/forms/form-layout"
               element={
-                <>
-                  <PageTitle title="Form Layout | لوحة التحكم مصبغة الورد" />
-                  <FormLayout />
-                </>
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="Form Layout | لوحة التحكم مصبغة الورد" />
+                    <FormLayout />
+                  </>
+                </AdminProtectedRoute>
               }
             />
             <Route
               path="/subscribers/:id"
-              element={<ProtectedSubscriptionDetails />}
+              element={
+                <ProtectedRoute>
+                  <ProtectedSubscriptionDetails />
+                </ProtectedRoute>
+              }
             />
             <Route
               path="/subscribers"
               element={
-                <>
-                  <PageTitle title="جدول الاشتراكات | لوحة التحكم مصبغة الورد" />
-                  <Breadcrumb pageName="الاشتراكات" />
-                  <div className="flex flex-col gap-10">
-                    <SubscriptionTable />
-                  </div>
-                </>
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="جدول الاشتراكات | لوحة التحكم مصبغة الورد" />
+                    <Breadcrumb pageName="الاشتراكات" />
+                    <div className="flex flex-col gap-10">
+                      <SubscriptionTable />
+                    </div>
+                  </>
+                </AdminProtectedRoute>
               }
             />
             <Route
               path="/settings"
               element={
-                <>
-                  <PageTitle title="الاعدادت  | لوحة التحكم مصبغة الورد" />
-                  <Settings />
-                </>
-              }
+                <ProtectedRoute>
+                  <>
+                    <PageTitle title="الاعدادت | لوحة التحكم مصبغة الورد" />
+                    <Settings />
+                  </>
+                </ProtectedRoute>
+              } 
             />
             <Route
               path="/chart"
               element={
-                <>
-                  <PageTitle title="Basic Chart | لوحة التحكم مصبغة الورد" />
-                  <Chart />
-                </>
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="Basic Chart | لوحة التحكم مصبغة الورد" />
+                    <Chart />
+                  </>
+                </AdminProtectedRoute>
               }
             />
             <Route
               path="/ui/buttons"
               element={
-                <>
-                  <PageTitle title="Buttons | لوحة التحكم مصبغة الورد" />
-                  <Buttons />
-                </>
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="Buttons | لوحة التحكم مصبغة الورد" />
+                    <Buttons />
+                  </>
+                </AdminProtectedRoute>
               }
             />
-            <Route path="*" element={<NotFoundPage />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </DefaultLayout>
       ) : (
@@ -215,7 +259,7 @@ function App() {
                 </>
               }
             />
-            <Route path="*" element={<NotFoundPage />} />
+                <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </GuestLayout>
       )}

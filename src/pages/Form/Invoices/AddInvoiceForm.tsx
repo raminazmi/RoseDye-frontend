@@ -1,25 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
+import Select from 'react-select';
 
 interface FormData {
     client_id: string;
-    issue_date: string;
-    due_date: string;
+    date: string;
     amount: string;
-    description: string;
 }
 
 interface FormErrors {
     client_id?: string;
-    issue_date?: string;
-    due_date?: string;
+    date?: string;
     amount?: string;
-    description?: string;
 }
 
 interface Client {
     id: number;
-    name: string;
+    subscription_number: string;
 }
 
 interface AddInvoiceFormProps {
@@ -30,70 +27,63 @@ interface AddInvoiceFormProps {
 const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose }) => {
     const [formData, setFormData] = useState<FormData>({
         client_id: '',
-        issue_date: '',
-        due_date: '',
+        date: '',
         amount: '',
-        description: '',
     });
-
+    const [invoiceNumber, setInvoiceNumber] = useState<string>(''); // رقم الفاتورة تلقائي
     const [errors, setErrors] = useState<FormErrors>({});
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoadingClients, setIsLoadingClients] = useState(true);
-    const [isSubmitting, setIsSubmitting] = useState(false); // حالة لـ "حفظ"
-    const [isClearing, setIsClearing] = useState(false); // حالة لـ "إفراغ"
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
         fetchClients();
+        fetchLastInvoiceNumber();
     }, []);
 
     const fetchClients = async () => {
         try {
             setIsLoadingClients(true);
-
             const token = localStorage.getItem('access_token');
-            if (!token) {
-                toast.error('يرجى تسجيل الدخول أولاً');
-                return;
-            }
-            const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/clients`, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
+            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/clients', {
+                headers: { Authorization: `Bearer ${token}` },
             });
-
             const data = await response.json();
-            if (data.status) {
-                setClients(data.data);
-            }
+            if (data.status) setClients(data.data);
         } catch (error) {
-            console.error('Error fetching clients:', error);
             toast.error('حدث خطأ أثناء جلب بيانات العملاء');
         } finally {
             setIsLoadingClients(false);
         }
     };
 
+    const fetchLastInvoiceNumber = async () => {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/invoices?page=1&per_page=1', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await response.json();
+            if (data.status && data.data.length > 0) {
+                setInvoiceNumber(data.data[0].invoice_number);
+            } else {
+                setInvoiceNumber('00001');
+            }
+        } catch (error) {
+            setInvoiceNumber('00001');
+        }
+    };
+
     const validate = (): FormErrors => {
         const newErrors: FormErrors = {};
-        if (!formData.client_id) newErrors.client_id = 'العميل مطلوب';
-        if (!formData.issue_date) newErrors.issue_date = 'تاريخ الإصدار مطلوب';
-        if (!formData.due_date) newErrors.due_date = 'تاريخ الاستحقاق مطلوب';
-        if (!formData.amount.trim()) newErrors.amount = 'المبلغ مطلوب';
-
-        if (formData.issue_date && formData.due_date) {
-            const issueDate = new Date(formData.issue_date);
-            const dueDate = new Date(formData.due_date);
-            if (issueDate > dueDate) {
-                newErrors.issue_date = 'تاريخ الإصدار يجب أن يكون قبل تاريخ الاستحقاق';
-            }
-        }
-
+        if (!formData.client_id) newErrors.client_id = 'رقم الاشتراك مطلوب';
+        if (!formData.date) newErrors.date = 'التاريخ مطلوب';
+        if (!formData.amount.trim()) newErrors.amount = 'قيمة الفاتورة مطلوبة';
         return newErrors;
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
         const formErrors = validate();
         if (Object.keys(formErrors).length > 0) {
             setErrors(formErrors);
@@ -104,11 +94,6 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('access_token');
-            if (!token) {
-                toast.error('يرجى تسجيل الدخول أولاً');
-                return;
-            }
-
             const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/invoices', {
                 method: 'POST',
                 headers: {
@@ -116,77 +101,58 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                     Authorization: `Bearer ${token}`,
                 },
                 body: JSON.stringify({
-                    ...formData,
-                    amount: parseFloat(formData.amount),
+                    client_id: formData.client_id,
+                    date: formData.date,
+                    amount: parseFloat(formData.amount.replace(/,/g, '')),
                 }),
             });
 
             const data = await response.json();
-            console.log('Response data:', data);
-
             if (response.ok && data.status) {
-                toast.success('تم الحفظ بنجاح', {
-                    position: 'top-right',
-                    autoClose: 3000,
-                    hideProgressBar: true,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    progress: undefined,
-                    theme: 'colored',
-                });
-                setFormData({
-                    client_id: '',
-                    issue_date: '',
-                    due_date: '',
-                    amount: '',
-                    description: '',
-                });
+                toast.success('تم اعتماد الفاتورة بنجاح');
+                setFormData({ client_id: '', date: '', amount: '' });
+                fetchLastInvoiceNumber();
                 onInvoiceAdded();
             } else {
-                toast.error(data.message || 'حدث خطأ أثناء الحفظ', {
-                    position: 'top-right',
-                    autoClose: 3000,
-                    hideProgressBar: true,
-                    closeOnClick: true,
-                    pauseOnHover: true,
-                    draggable: true,
-                    theme: 'colored',
-                });
+                toast.error(data.message || 'حدث خطأ أثناء الحفظ');
             }
         } catch (error) {
-            console.error('Error:', error);
-            toast.error('حدث خطأ أثناء الاتصال بالخادم', {
-                position: 'top-right',
-                autoClose: 3000,
-                hideProgressBar: true,
-                closeOnClick: true,
-                pauseOnHover: true,
-                draggable: true,
-                theme: 'colored',
-            });
+            toast.error('حدث خطأ أثناء الاتصال بالخادم');
         } finally {
             setIsSubmitting(false);
         }
     };
 
     const handleClear = () => {
-        setIsClearing(true);
-        setTimeout(() => {
-            setFormData({
-                client_id: '',
-                issue_date: '',
-                due_date: '',
-                amount: '',
-                description: '',
-            });
-            setIsClearing(false);
-        }, 500); // محاكاة تأخير صغير لإظهار الـ Loader
+        setFormData({ ...formData, client_id: '', amount: '' });
+        setErrors({});
     };
 
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const formatAmount = (value: string) => {
+        const numericValue = value.replace(/[^0-9]/g, '');
+        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setFormData({ ...formData, [name]: value });
+        if (name === 'amount') {
+            setFormData({ ...formData, [name]: formatAmount(value) });
+        } else {
+            setFormData({ ...formData, [name]: value });
+        }
+    };
+
+    const handleClientSelect = (selectedOption: any) => {
+        setFormData({ ...formData, client_id: selectedOption ? selectedOption.value : '' });
+    };
+
+    const clientOptions = clients.map(client => ({
+        value: client.id.toString(),
+        label: client.subscription_number,
+    }));
+
+    const filterOption = (option: any, inputValue: string) => {
+        return option.label.toLowerCase().includes(inputValue.toLowerCase());
     };
 
     return (
@@ -202,89 +168,74 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 </button>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">العميل</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الفاتورة</label>
+                    <input
+                        type="text"
+                        value={invoiceNumber}
+                        disabled
+                        className="w-full rounded-md border border-gray-300 bg-gray-100 py-1.5 sm:py-2 px-3 text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                    />
+                </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الاشتراك</label>
                     {isLoadingClients ? (
                         <div className="w-full rounded-md border border-gray-300 bg-gray-100 dark:bg-gray-700 h-10 flex items-center justify-center">
                             <span className="text-gray-500 dark:text-gray-400 text-sm">جارٍ التحميل...</span>
                         </div>
                     ) : (
-                        <select
-                            name="client_id"
-                            value={formData.client_id}
-                            onChange={handleInputChange}
-                            className="w-full rounded-md border border-gray-300 bg-white py-1 sm:py-[6px] px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
-                        >
-                            <option value="">اختر العميل</option>
-                            {clients.map((client) => (
-                                <option key={client.id} value={client.id}>
-                                    {client.name}
-                                </option>
-                            ))}
-                        </select>
+                        <Select
+                            options={clientOptions}
+                            onChange={handleClientSelect}
+                            placeholder="ابحث عن رقم الاشتراك..."
+                            isClearable
+                            isSearchable
+                            filterOption={filterOption}
+                            className="text-sm"
+                            styles={{
+                                control: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: 'white',
+                                    borderColor: '#d1d5db',
+                                    '&:hover': { borderColor: '#9ca3af' },
+                                }),
+                                menu: (provided) => ({
+                                    ...provided,
+                                    backgroundColor: 'white',
+                                }),
+                                option: (provided, state) => ({
+                                    ...provided,
+                                    backgroundColor: state.isSelected ? '#3b82f6' : state.isFocused ? '#e5e7eb' : 'white',
+                                    color: state.isSelected ? 'white' : 'black',
+                                }),
+                            }}
+                        />
                     )}
-                    {errors.client_id && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.client_id}</span>
-                    )}
+                    {errors.client_id && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.client_id}</span>}
                 </div>
-
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ الإصدار</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">التاريخ</label>
                     <input
                         type="date"
-                        name="issue_date"
-                        value={formData.issue_date}
+                        name="date"
+                        value={formData.date}
                         onChange={handleInputChange}
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
-                    {errors.issue_date && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.issue_date}</span>
-                    )}
+                    {errors.date && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.date}</span>}
                 </div>
-
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">تاريخ الاستحقاق</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">قيمة الفاتورة (د.ك)</label>
                     <input
-                        type="date"
-                        name="due_date"
-                        value={formData.due_date}
-                        onChange={handleInputChange}
-                        className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
-                    />
-                    {errors.due_date && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.due_date}</span>
-                    )}
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">المبلغ</label>
-                    <input
-                        type="number"
+                        type="text"
                         name="amount"
-                        placeholder="ادخل المبلغ"
+                        placeholder="ادخل المبلغ (مثال: 1,234)"
                         value={formData.amount}
                         onChange={handleInputChange}
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
-                    {errors.amount && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount}</span>
-                    )}
-                </div>
-
-                <div className="sm:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">الوصف</label>
-                    <input
-                        type="text"
-                        name="description"
-                        placeholder="ادخل الوصف"
-                        value={formData.description}
-                        onChange={handleInputChange}
-                        className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
-                    />
-                    {errors.description && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.description}</span>
-                    )}
+                    {errors.amount && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount}</span>}
                 </div>
             </div>
 
@@ -295,28 +246,20 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                     disabled={isSubmitting}
                 >
                     {!isSubmitting ? (
-                        <span className="">حفظ</span>
+                        <span>اعتماد</span>
                     ) : (
-                            <span className="flex items-center gap-2 py-1">
+                        <span className="flex items-center gap-2 py-1">
                             <span className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
-                            <p className="text-xs">جاري الحفظ</p>
+                            <p className="text-xs">جاري الاعتماد</p>
                         </span>
                     )}
                 </button>
                 <button
                     type="button"
                     onClick={handleClear}
-                    className={`relative flex w-full sm:w-1/2 justify-center rounded bg-red-700 p-3 font-medium text-white ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    disabled={isClearing}
+                    className="flex w-full sm:w-1/2 justify-center rounded bg-gray-500 p-3 font-medium text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm"
                 >
-                    {!isClearing ? (
-                        <span className="">إفراغ</span>
-                    ) : (
-                            <span className="flex items-center gap-2 py-1">
-                            <span className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
-                            <p className="text-xs">جاري الإفراغ</p>
-                        </span>
-                    )}
+                    <span>إفراغ</span>
                 </button>
             </div>
         </form>

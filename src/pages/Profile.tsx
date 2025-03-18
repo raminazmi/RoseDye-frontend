@@ -138,7 +138,7 @@ const Profile = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-  const avatarUrl = user?.avatar ? `https://rosedye-backend-production.up.railway.app/${user.avatar}` : null;
+  const avatarUrl = user?.avatar ? `http://localhost:8000/${user.avatar}` : null;
   const getInitial = () => {
     if (!user || !user.name) return '?';
     return user.name.charAt(0).toUpperCase();
