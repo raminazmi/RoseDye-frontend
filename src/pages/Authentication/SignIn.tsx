@@ -15,7 +15,10 @@ const SignIn: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
-    setCountries(countriesData);
+    const uniqueCountries = Array.from(
+      new Map(countriesData.map((country) => [country.code, country])).values()
+    );
+    setCountries(uniqueCountries);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -33,28 +36,32 @@ const SignIn: React.FC = () => {
         body: JSON.stringify({ phone: fullPhone }),
       });
 
+      const contentType = response.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error('Response is not JSON');
+      }
+
+      const data = await response.json();
+
       if (!response.ok) {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setError(Object.values(errorData.errors).join(', '));
+        if (data.errors) {
+          setError(Object.values(data.errors).join(', '));
         } else {
-          setError(errorData.message || 'خطأ في تسجيل الدخول');
+          setError(data.message || 'خطأ في تسجيل الدخول');
         }
         setLoading(false);
         return;
       }
 
-      const data = await response.json();
       localStorage.setItem('temp_token', data.temp_token);
       localStorage.setItem('client', JSON.stringify(data.client));
       navigate('/auth/otp-form');
     } catch (err) {
-      setError('حدث خطأ أثناء الاتصال بالخادم');
+      setError('حدث خطأ أثناء الاتصال بالخادم: ');
       console.error(err);
       setLoading(false);
     }
   };
-
   const filteredCountries = countries.filter((country) =>
     country.arabicName.toLowerCase().includes(searchTerm.toLowerCase()) ||
     country.code.toLowerCase().includes(searchTerm.toLowerCase())
@@ -94,9 +101,9 @@ const SignIn: React.FC = () => {
                   onChange={(e) => setCountryCode(e.target.value)}
                   className="w-1/3 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-3 pr-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 appearance-none transition-all duration-200"
                 >
-                  {filteredCountries.map((country) => (
+                  {filteredCountries.map((country, index) => (
                     <option
-                      key={country.code}
+                      key={`${country.code}-${index}`}
                       value={country.code}
                       className="flex items-center p-2 hover:bg-gray-200 dark:bg-gray-600"
                     >
