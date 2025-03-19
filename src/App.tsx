@@ -63,7 +63,23 @@ function App() {
   useEffect(() => {
     const tempToken = localStorage.getItem('temp_token');
     if (tempToken && !pathname.includes('/auth/otp-form')) {
-      navigate('/auth/otp-form');
+      const verifyToken = async () => {
+        try {
+          const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/verify-temp-token', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ temp_token: tempToken }),
+          });
+
+          if (response.ok) {
+            navigate('/auth/otp-form');
+          }
+        } catch (err) {
+          console.error('Error verifying temp token:', err);
+          navigate('/login');
+        }
+      };
+      verifyToken();
     }
     if (auth && (pathname === '/login')) {
       navigate('/');
