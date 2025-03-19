@@ -4,13 +4,13 @@ import Select from 'react-select';
 
 interface FormData {
     client_id: string;
-    date: string; // إضافة حقل التاريخ
+    date: string;
     amount: string;
 }
 
 interface FormErrors {
     client_id?: string;
-    date?: string; // إضافة حقل التاريخ
+    date?: string;
     amount?: string;
 }
 

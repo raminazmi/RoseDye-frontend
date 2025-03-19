@@ -48,9 +48,7 @@ const SubscriptionDetailsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log('Fetching subscription with ID:', id);
         const token = localStorage.getItem('access_token');
-        console.log('Token:', token);
         if (!token) {
           throw new Error('لم يتم العثور على رمز الوصول');
         }
@@ -68,7 +66,6 @@ const SubscriptionDetailsPage = () => {
         }
 
         const data = await response.json();
-        console.log('API Response:', data);
 
         if (!data.status) {
           throw new Error(data.message || 'فشل في جلب البيانات');
@@ -83,7 +80,7 @@ const SubscriptionDetailsPage = () => {
         };
 
         setSubscription(subscriptionData);
-        setPagination(data.data.pagination || { total: 0, current_page: 1, last_page: 1 }); // تحديث بيانات الـ Pagination
+        setPagination(data.data.pagination || { total: 0, current_page: 1, last_page: 1 });
       } catch (error) {
         console.error('Fetch Error:', error);
         setError(error instanceof Error ? error.message : 'حدث خطأ غير متوقع');

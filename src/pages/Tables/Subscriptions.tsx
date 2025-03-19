@@ -73,7 +73,7 @@ const Subscriptions: React.FC = () => {
       window.URL.revokeObjectURL(url);
       toast.success('تم تصدير PDF بنجاح');
     } catch (error) {
-      console.log('تم تصدير PDF بنجاح');
+      toast.error('فشل تصدير PDF');
     } finally {
       setExportLoading(false);
     }

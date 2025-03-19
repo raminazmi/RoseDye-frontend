@@ -28,9 +28,7 @@ const ECommerce: React.FC = () => {
   useEffect(() => {
     const fetchStatistics = async () => {
       try {
-        console.log('جاري جلب الإحصائيات...');
         const token = localStorage.getItem('access_token');
-        console.log('Access Token:', token);
         if (!token) {
           throw new Error('لم يتم العثور على رمز الوصول');
         }
@@ -48,7 +46,6 @@ const ECommerce: React.FC = () => {
         }
 
         const data = await response.json();
-        console.log('API Response:', data);
 
         const formattedData = {
           ...data,
@@ -56,9 +53,7 @@ const ECommerce: React.FC = () => {
         };
 
         setStatistics(formattedData);
-        console.log('تم تعيين الإحصائيات:', formattedData);
       } catch (error) {
-        console.error('خطأ في جلب الإحصائيات:', error);
         setError(error instanceof Error ? error.message : 'حدث خطأ غير متوقع');
       } finally {
         setLoading(false);

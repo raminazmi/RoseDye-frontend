@@ -30,7 +30,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
         date: '',
         amount: '',
     });
-    const [invoiceNumber, setInvoiceNumber] = useState<string>(''); // رقم الفاتورة تلقائي
+    const [invoiceNumber, setInvoiceNumber] = useState<string>('');
     const [errors, setErrors] = useState<FormErrors>({});
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoadingClients, setIsLoadingClients] = useState(true);
