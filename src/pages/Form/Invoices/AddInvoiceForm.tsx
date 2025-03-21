@@ -103,7 +103,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 body: JSON.stringify({
                     client_id: formData.client_id,
                     date: formData.date,
-                    amount: parseFloat(formData.amount.replace(/,/g, '')),
+                    amount: formData.amount.replace(/,/g, ''),
                 }),
             });
 
@@ -129,7 +129,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
     };
 
     const formatAmount = (value: string) => {
-        const numericValue = value.replace(/[^0-9]/g, '');
+        const numericValue = value.replace(/[^0-9.]/g, '');
         return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 

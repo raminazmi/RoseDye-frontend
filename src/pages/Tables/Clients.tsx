@@ -6,15 +6,24 @@ import EditClientForm from '../Form/Clients/EditClientForm';
 import Loader from '../../common/Loader';
 import Pagination from '../../components/Pagination';
 
-interface Client {
+export interface Subscription {
   id: number;
-  name: string;
+  client_id: number;
+  plan_name: string;
+  price: number;
+  start_date: string;
+  end_date: string;
+  status: string;
+}
+
+export interface Client {
+  id: number;
   phone: string;
   current_balance: number;
   renewal_balance: number;
-  email: string;
   subscription_number: string;
-  start_date: string;
+  additional_gift: number;
+  subscriptions: Subscription[];
 }
 
 const Clients: React.FC = () => {
@@ -162,8 +171,9 @@ const Clients: React.FC = () => {
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-700">
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الاشتراك</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الاسم</th>
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الهاتف</th>
+                      <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الهاتف</th>
+                      <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">تاريخ البداية</th>
+                      <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">تاريخ النهاية</th>
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الرصيد الحالي</th>
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رصيد التجديد</th>
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">الإجراءات</th>
@@ -179,10 +189,13 @@ const Clients: React.FC = () => {
                         {client.subscription_number}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.name}
+                        {client.phone}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.phone}
+                        {client.subscriptions[0]?.start_date || '-'}
+                      </td>
+                      <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
+                        {client.subscriptions[0]?.end_date || '-'}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                         {client.current_balance} د.ك

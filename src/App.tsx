@@ -22,9 +22,7 @@ import SubscriptionDetails from './pages/Tables/SubscriptionDetails';
 import { useAuth } from './context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from './components/Breadcrumbs/Breadcrumb';
-import NotFoundPage from './NotFoundPage';
 
-// مكون حماية المسارات
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { auth } = useAuth();
 
@@ -35,7 +33,6 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
-// مكون حماية المسارات الإدارية
 const AdminProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { auth, user } = useAuth();
 
@@ -88,9 +85,10 @@ function App() {
 
   const ProtectedSubscriptionDetails = () => {
     const { id } = useParams<{ id: string }>();
+    const { user } = useAuth();
     const userId = localStorage.getItem('client_id');
 
-    if (id !== userId?.toString()) {
+    if (user?.role !== 'admin' && id !== userId?.toString()) {
       return <Navigate to="/" replace />;
     }
 
@@ -104,6 +102,7 @@ function App() {
       </>
     );
   };
+
 
   return loading ? (
     <Loader />
@@ -203,12 +202,12 @@ function App() {
             <Route
               path="/settings"
               element={
-                <ProtectedRoute>
+                <AdminProtectedRoute>
                   <>
                     <PageTitle title="الاعدادت | لوحة التحكم مصبغة الورد" />
                     <Settings />
                   </>
-                </ProtectedRoute>
+                </AdminProtectedRoute>
               } 
             />
             <Route

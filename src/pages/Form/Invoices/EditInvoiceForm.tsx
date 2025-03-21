@@ -124,8 +124,8 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 },
                 body: JSON.stringify({
                     client_id: formData.client_id,
-                    date: formData.date, // إرسال التاريخ المدخل
-                    amount: parseFloat(formData.amount.replace(/,/g, '')),
+                    date: formData.date,
+                    amount: formData.amount.replace(/,/g, ''),
                 }),
             });
 
@@ -145,7 +145,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
     };
 
     const formatAmount = (value: string) => {
-        const numericValue = value.replace(/[^0-9]/g, '');
+        const numericValue = value.replace(/[^0-9.]/g, '');
         return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
@@ -154,7 +154,6 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
         if (name === 'amount') {
             setFormData({ ...formData, [name]: formatAmount(value) });
         } else if (name === 'date') {
-            // Ensure the date is in YYYY-MM-DD format
             const formattedDate = new Date(value).toISOString().split('T')[0];
             setFormData({ ...formData, [name]: formattedDate });
         } else {
@@ -168,7 +167,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
 
     const clientOptions = clients.map(client => ({
         value: client.id.toString(),
-        label: client.subscription_number, // عرض رقم الاشتراك فقط
+        label: client.subscription_number,
     }));
 
     const filterOption = (option: any, inputValue: string) => {

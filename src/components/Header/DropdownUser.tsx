@@ -18,7 +18,7 @@ const DropdownUser = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const navigate = useNavigate();
-  const { logout } = useAuth();
+  const { logout, auth } = useAuth();
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -98,6 +98,8 @@ const DropdownUser = () => {
                 <span>ملفي الشخصي</span>
               </Link>
             </li>
+            {(user?.role == 'admin')
+            ?
             <li>
               <Link
                 to="/settings"
@@ -107,6 +109,8 @@ const DropdownUser = () => {
                 <span>إعدادت الحساب</span>
               </Link>
             </li>
+              : <li></li>
+            }
           </ul>
           <button
             onClick={handleLogout}

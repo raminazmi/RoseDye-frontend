@@ -4,6 +4,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import Loader from '../../common/Loader';
 import Pagination from '../../components/Pagination';
 import axios from 'axios';
+import { Link } from 'react-router-dom'; // استيراد Link من react-router-dom
 
 interface Subscription {
   id: number;
@@ -134,7 +135,7 @@ const Subscriptions: React.FC = () => {
     if (totalDue <= 30) return 'bg-green-100 dark:bg-green-900';
     if (totalDue >= 35 && totalDue <= 40) return 'bg-orange-100 dark:bg-orange-900';
     if (totalDue > 40) return 'bg-red-100 dark:bg-red-900';
-    return 'bg-white dark:bg-gray-800'; 
+    return 'bg-white dark:bg-gray-800';
   };
 
   const formatAmount = (amount: number) => {
@@ -263,7 +264,12 @@ const Subscriptions: React.FC = () => {
                   className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150`}
                 >
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                    {subscription.subscription_number}
+                    <Link
+                      to={`/subscribers/${subscription.id}`}
+                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200"
+                    >
+                      {subscription.subscription_number}
+                    </Link>
                   </td>
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                     {subscription.invoices_count}
