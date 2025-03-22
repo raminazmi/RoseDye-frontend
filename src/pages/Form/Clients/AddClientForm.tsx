@@ -44,7 +44,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         subscription_number: '',
         additional_gift: '',
     });
-    const [baseCurrentBalance, setBaseCurrentBalance] = useState<string>(''); // القيمة الأساسية للرصيد الحالي
+    const [baseCurrentBalance, setBaseCurrentBalance] = useState<string>('');
     const [errors, setErrors] = useState<FormErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isClearing, setIsClearing] = useState(false);
@@ -56,13 +56,11 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         setCountries(countriesData);
     }, []);
 
-    // دالة لتنسيق الأرقام بإضافة الفواصل
     const formatBalance = (value: string) => {
         const numericValue = value.replace(/[^0-9.]/g, '');
         return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
-    // دالة لحساب الرصيد الحالي بناءً على القيمة الأساسية والهدية الإضافية
     const calculateCurrentBalance = (base: string, additionalGift: string) => {
         const baseValue = parseFloat(base.replace(/,/g, '')) || 0;
         const additionalGiftValue = parseFloat(additionalGift.replace(/,/g, '')) || 0;
@@ -70,32 +68,27 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         return formatBalance(newBalance.toString());
     };
 
-    // التعامل مع اختيار الباقة (تعيين الهدية وعدد الأيام فقط)
     const handlePackageSelect = (pkg: typeof packages[number]) => {
         const startDate = formData.start_date || new Date().toISOString().split('T')[0];
         const endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + pkg.durationDays);
 
-        // تعيين الهدية الإضافية بقيمة الهدية المرتبطة بالباقة
         const newAdditionalGift = formatBalance(pkg.gift.toString());
 
         setFormData(prev => ({
             ...prev,
             start_date: startDate,
             end_date: endDate.toISOString().split('T')[0],
-            additional_gift: newAdditionalGift, // تعيين الهدية الإضافية تلقائيًا فقط
-            // لا نغير current_balance تلقائيًا هنا
+            additional_gift: newAdditionalGift,
         }));
         setSelectedPackage(pkg);
     };
 
-    // التعامل مع تغيير الإدخال
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
         if (name === 'additional_gift') {
             const formattedValue = formatBalance(value);
-            // تحديث الهدية الإضافية فقط، دون التأثير التلقائي على الرصيد الحالي
             setFormData(prev => ({
                 ...prev,
                 [name]: formattedValue,
@@ -105,7 +98,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
             setBaseCurrentBalance(formattedValue);
             setFormData(prev => ({
                 ...prev,
-                [name]: formattedValue, // تحديث الرصيد الحالي بدون إضافة الهدية تلقائيًا
+                [name]: formattedValue,
             }));
         } else if (name === 'renewal_balance') {
             setFormData({ ...formData, [name]: formatBalance(value) });
@@ -118,7 +111,6 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         }
     };
 
-    // التعامل مع إرسال النموذج
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
@@ -166,7 +158,6 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         }
     };
 
-    // التعامل مع إفراغ النموذج
     const handleClear = () => {
         setIsClearing(true);
         setTimeout(() => {
@@ -248,16 +239,16 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
 
                 <div className="sm:col-span-2">
                     <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">الباقات المتاحة (اختياري)</label>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-3 md:grid-cols-3 gap-2 gap-4">
                         {packages.map((pkg, index) => (
                             <button
                                 type="button"
                                 key={index}
                                 onClick={() => handlePackageSelect(pkg)}
-                                className={`p-4 rounded-lg border ${selectedPackage?.durationDays === pkg.durationDays ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : 'border-gray-300 dark:border-gray-600'} transition-all duration-200`}
+                                className={`p-3 md:p-4 rounded-lg border ${selectedPackage?.durationDays === pkg.durationDays ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : 'border-gray-300 dark:border-gray-600'} transition-all duration-200`}
                             >
-                                <div className="text-lg font-semibold">{pkg.durationDays} يوم</div>
-                                <div className="text-sm text-gray-600 dark:text-gray-300">هدية {pkg.gift} دينار</div>
+                                <div className="text-md md:text-lg font-semibold mb-2 md:mb-0">{pkg.durationDays} يوم</div>
+                                <div className="text-xs md:text-sm text-gray-600 dark:text-gray-300">هدية {pkg.gift} دينار</div>
                             </button>
                         ))}
                     </div>

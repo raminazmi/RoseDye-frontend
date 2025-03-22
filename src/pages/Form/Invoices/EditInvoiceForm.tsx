@@ -79,7 +79,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 const invoice = data.data;
                 setFormData({
                     client_id: invoice.client_id.toString(),
-                    date: new Date(invoice.date).toISOString().split('T')[0], // Format date as YYYY-MM-DD
+                    date: new Date(invoice.date).toISOString().split('T')[0],
                     amount: invoice.amount.toLocaleString(),
                 });
                 setInvoiceNumber(invoice.invoice_number);
@@ -93,7 +93,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
     const validate = (): FormErrors => {
         const newErrors: FormErrors = {};
         if (!formData.client_id) newErrors.client_id = 'العميل مطلوب';
-        if (!formData.date) newErrors.date = 'التاريخ مطلوب'; // التحقق من حقل التاريخ
+        if (!formData.date) newErrors.date = 'التاريخ مطلوب';
         if (!formData.amount.trim()) newErrors.amount = 'المبلغ مطلوب';
         return newErrors;
     };
@@ -125,7 +125,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 body: JSON.stringify({
                     client_id: formData.client_id,
                     date: formData.date,
-                    amount: formData.amount.replace(/,/g, ''),
+                    amount: formData.amount.replace(/,/g, '') || '0',
                 }),
             });
 
@@ -255,9 +255,11 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                     <input
                         type="text"
                         name="amount"
-                        placeholder="ادخل المبلغ (مثال: 1,234)"
+                        placeholder="0"
                         value={formData.amount}
                         onChange={handleInputChange}
+                        inputMode="numeric"
+                        pattern="[0-9,]*"
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
                     {errors.amount && (

@@ -103,7 +103,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 body: JSON.stringify({
                     client_id: formData.client_id,
                     date: formData.date,
-                    amount: formData.amount.replace(/,/g, ''),
+                    amount: formData.amount.replace(/,/g, '') || '0',
                 }),
             });
 
@@ -230,9 +230,11 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                     <input
                         type="text"
                         name="amount"
-                        placeholder="ادخل المبلغ (مثال: 1,234)"
+                        placeholder="0"
                         value={formData.amount}
                         onChange={handleInputChange}
+                        inputMode="numeric"
+                        pattern="[0-9,]*"
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
                     {errors.amount && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount}</span>}

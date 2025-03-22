@@ -9,9 +9,9 @@ import Pagination from '../../components/Pagination';
 interface Invoice {
   id: number;
   invoice_number: string;
-  date: string; // تعديل ليعكس الحقل الجديد
+  date: string;
   amount: number;
-  client: { subscription_number: string }; // تعديل ليعكس رقم الاشتراك فقط
+  client: { subscription_number: string };
 }
 
 const Invoices: React.FC = () => {
