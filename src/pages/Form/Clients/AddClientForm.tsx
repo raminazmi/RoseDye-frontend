@@ -120,7 +120,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/v1/clients', {
+            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/clients', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

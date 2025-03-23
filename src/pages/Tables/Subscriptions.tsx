@@ -39,7 +39,7 @@ const Subscriptions: React.FC = () => {
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`, {
+      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -61,7 +61,7 @@ const Subscriptions: React.FC = () => {
   const exportPdf = async () => {
     setExportLoading(true);
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/subscriptions/export-pdf', {
+      const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/export-pdf', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -86,7 +86,7 @@ const Subscriptions: React.FC = () => {
 
   const handleStatusChange = async (subscriptionId: number, newStatus: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${subscriptionId}/status`, {
+      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/${subscriptionId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +113,7 @@ const Subscriptions: React.FC = () => {
       setSendingStatus((prev) => ({ ...prev, [subscriptionId]: true }));
       const subscription = subscriptions.find((sub) => sub.id === subscriptionId);
       const message = `تنبيه: اشتراكك رقم ${subscription?.subscription_number} على وشك الانتهاء بتاريخ ${subscription?.end_date}.`;
-      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${subscriptionId}/notify`, {
+      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/${subscriptionId}/notify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -157,7 +157,7 @@ const Subscriptions: React.FC = () => {
 
     try {
       setRenewingStatus((prev) => ({ ...prev, [selectedSubscriptionId]: true }));
-      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
+      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

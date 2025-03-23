@@ -157,7 +157,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/v1/clients/${client.id}`, {
+            const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/clients/${client.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

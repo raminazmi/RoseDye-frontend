@@ -42,7 +42,7 @@ const Settings = () => {
 
       try {
         setIsLoading(true);
-        const response = await axios.get('http://localhost:8000/api/v1/user', {
+        const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
         const userData = response.data.user;
@@ -84,7 +84,7 @@ const Settings = () => {
 
     try {
       setIsUploading(true);
-      const response = await axios.post('http://localhost:8000/api/v1/user/avatar', uploadData, {
+      const response = await axios.post('https://rosedye-backend-production.up.railway.app/api/v1/user/avatar', uploadData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -121,7 +121,7 @@ const Settings = () => {
     setIsSaving(true);
     try {
       const response = await axios.put(
-        'http://localhost:8000/api/v1/user/profile',
+        'https://rosedye-backend-production.up.railway.app/api/v1/user/profile',
         {
           name: formData.fullName,
           phone: formData.phoneNumber,
