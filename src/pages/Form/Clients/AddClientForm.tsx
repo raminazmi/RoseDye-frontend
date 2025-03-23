@@ -10,6 +10,7 @@ interface FormData {
     start_date: string;
     end_date: string;
     subscription_number: string;
+    original_gift: string;
     additional_gift: string;
 }
 
@@ -42,6 +43,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         start_date: '',
         end_date: '',
         subscription_number: '',
+        original_gift: '',
         additional_gift: '',
     });
     const [baseCurrentBalance, setBaseCurrentBalance] = useState<string>('');
@@ -80,6 +82,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
             start_date: startDate,
             end_date: endDate.toISOString().split('T')[0],
             additional_gift: newAdditionalGift,
+            original_gift: newAdditionalGift,
         }));
         setSelectedPackage(pkg);
     };
@@ -87,7 +90,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
-        if (name === 'additional_gift') {
+        if (name === 'additional_gift' || name === 'original_gift') { // دعم original_gift
             const formattedValue = formatBalance(value);
             setFormData(prev => ({
                 ...prev,
@@ -128,6 +131,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     phone: `${countryCode}${formData.phone.startsWith('0') ? formData.phone.slice(1) : formData.phone}`,
                     current_balance: formData.current_balance.replace(/,/g, '') || '0',
                     renewal_balance: formData.renewal_balance.replace(/,/g, '') || '0',
+                    original_gift: formData.original_gift.replace(/,/g, '') || '0', // إضافة original_gift
                     additional_gift: formData.additional_gift.replace(/,/g, '') || '0',
                 }),
             });
@@ -142,6 +146,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     start_date: '',
                     end_date: '',
                     subscription_number: '',
+                    original_gift: '',
                     additional_gift: '',
                 });
                 setBaseCurrentBalance('');
@@ -167,6 +172,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                 renewal_balance: '',
                 start_date: '',
                 end_date: '',
+                original_gift: '',
                 subscription_number: '',
                 additional_gift: '',
             });

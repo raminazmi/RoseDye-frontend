@@ -9,9 +9,9 @@ interface FormData {
 }
 
 interface FormErrors {
-    client_id?: string;
-    date?: string;
-    amount?: string;
+    client_id?: string[];
+    date?: string[];
+    amount?: string[];
 }
 
 interface Client {
@@ -28,7 +28,7 @@ interface EditInvoiceFormProps {
 const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceUpdated, onClose }) => {
     const [formData, setFormData] = useState<FormData>({
         client_id: '',
-        date: '', 
+        date: '',
         amount: '',
     });
     const [invoiceNumber, setInvoiceNumber] = useState<string>('');
@@ -90,23 +90,8 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
         }
     };
 
-    const validate = (): FormErrors => {
-        const newErrors: FormErrors = {};
-        if (!formData.client_id) newErrors.client_id = 'العميل مطلوب';
-        if (!formData.date) newErrors.date = 'التاريخ مطلوب';
-        if (!formData.amount.trim()) newErrors.amount = 'المبلغ مطلوب';
-        return newErrors;
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
-        const formErrors = validate();
-        if (Object.keys(formErrors).length > 0) {
-            setErrors(formErrors);
-            return;
-        }
-
         setErrors({});
         setIsSubmitting(true);
         try {
@@ -133,6 +118,8 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
             if (response.ok && data.status) {
                 toast.success('تم تعديل الفاتورة بنجاح');
                 onInvoiceUpdated();
+            } else if (data.errors) {
+                setErrors(data.errors);
             } else {
                 toast.error(data.message || 'حدث خطأ أثناء التعديل');
             }
@@ -153,9 +140,6 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
         const { name, value } = e.target;
         if (name === 'amount') {
             setFormData({ ...formData, [name]: formatAmount(value) });
-        } else if (name === 'date') {
-            const formattedDate = new Date(value).toISOString().split('T')[0];
-            setFormData({ ...formData, [name]: formattedDate });
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -234,7 +218,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                         />
                     )}
                     {errors.client_id && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.client_id}</span>
+                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.client_id[0]}</span>
                     )}
                 </div>
                 <div>
@@ -247,7 +231,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
                     {errors.date && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.date}</span>
+                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.date[0]}</span>
                     )}
                 </div>
                 <div>
@@ -263,7 +247,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
                     {errors.amount && (
-                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount}</span>
+                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount[0]}</span>
                     )}
                 </div>
             </div>

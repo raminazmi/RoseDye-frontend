@@ -13,6 +13,7 @@ export interface Subscription {
   price: number;
   start_date: string;
   end_date: string;
+  duration_in_days: number;
   status: string;
 }
 
@@ -23,6 +24,7 @@ export interface Client {
   renewal_balance: number;
   subscription_number: string;
   additional_gift: number;
+  original_gift: number;
   subscriptions: Subscription[];
 }
 
@@ -171,9 +173,10 @@ const Clients: React.FC = () => {
                 <thead>
                   <tr className="bg-gray-50 dark:bg-gray-700">
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الاشتراك</th>
-                      <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الهاتف</th>
-                      <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">تاريخ البداية</th>
-                      <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">تاريخ النهاية</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الهاتف</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">تاريخ البداية</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">تاريخ النهاية</th>
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">عدد الأيام</th> {/* عمود جديد */}
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الرصيد الحالي</th>
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رصيد التجديد</th>
                     <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm">الإجراءات</th>
@@ -198,7 +201,13 @@ const Clients: React.FC = () => {
                         {client.subscriptions[0]?.end_date || '-'}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.current_balance} د.ك
+                        {client.subscriptions[0]?.duration_in_days || '-'} يوم 
+                      </td>
+                      <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
+                        <span className={client.current_balance < 0 ? 'text-red-500' : ''}>
+                          {client.current_balance} د.ك
+                        </span>
+                        {client.additional_gift > 0 ? ` + ${client.additional_gift} هدية` : ''}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                         {client.renewal_balance} د.ك

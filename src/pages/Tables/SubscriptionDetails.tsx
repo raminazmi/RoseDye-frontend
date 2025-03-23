@@ -109,19 +109,49 @@ const SubscriptionDetailsPage = () => {
     return <div className="text-center p-8">لا توجد بيانات متاحة</div>;
   }
 
+  const getStatusStyles = (status: string) => {
+    switch (status) {
+      case 'active':
+        return {
+          text: 'نشط',
+          className: 'bg-green-600 text-white rounded-lg py-2 px-4',
+        };
+      case 'expired':
+        return {
+          text: 'منتهي',
+          className: 'bg-red-600 text-white rounded-lg py-2 px-4',
+        };
+      case 'canceled':
+        return {
+          text: 'موقوف',
+          className: 'bg-gray-600 text-white rounded-lg py-2 px-4',
+        };
+      default:
+        return {
+          text: 'غير معروف',
+          className: 'bg-gray-400 text-white rounded-lg py-2 px-4',
+        };
+    }
+  };
+
+  const statusStyles = getStatusStyles(subscription.status);
+
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
       <ToastContainer />
-      <div className="py-6 px-4 flex flex-col md:flex-row justify-between items-center md:px-6 xl:px-7.5">
+      <div className="py-6 px-4 flex flex-col md:flex-row justify-between items-center md:px-6 xl:px-7.5 gap-2">
         <h4 className="text-xl font-semibold text-black dark:text-white mb-4 md:mb-0">
           رقم الاشتراك: {subscription.client.subscription_number}
         </h4>
-        <div className="flex gap-4">
-          <button className="bg-primary text-white rounded-lg py-2 px-4">
+        <div className="flex gap-4 flex-wrap justify-center items-center">
+          <button className="bg-primary text-white rounded-lg py-2 px-4 w-full xsm:w-fit">
             الرصيد الحالي: {Number(subscription.client.current_balance).toFixed(2)} دينار
           </button>
-          <button className="bg-green-600 text-white rounded-lg py-2 px-4">
+          <button className="bg-green-600 text-white rounded-lg py-2 px-4 w-full xsm:w-fit">
             ينتهي في: {new Date(subscription.end_date).toLocaleDateString('ar-EG')}
+          </button>
+          <button className={`${statusStyles.className} w-full xsm:w-fit`}>
+            حالة الاشتراك: {statusStyles.text}
           </button>
         </div>
       </div>

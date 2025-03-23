@@ -145,7 +145,6 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
         }
     };
 
-    // التعامل مع إرسال النموذج
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setErrors({});
@@ -187,7 +186,6 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
         }
     };
 
-    // التعامل مع إفراغ النموذج
     const handleClear = () => {
         setIsClearing(true);
         setTimeout(() => {

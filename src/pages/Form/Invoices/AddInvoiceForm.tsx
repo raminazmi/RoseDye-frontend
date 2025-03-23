@@ -9,9 +9,10 @@ interface FormData {
 }
 
 interface FormErrors {
-    client_id?: string;
-    date?: string;
-    amount?: string;
+    client_id?: string[];
+    date?: string[];
+    amount?: string[];
+    general?: string; // لتخزين الرسائل العامة مثل "المشترك منتهي" أو "المشترك موقوف"
 }
 
 interface Client {
@@ -30,15 +31,16 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
         date: '',
         amount: '',
     });
-    const [invoiceNumber, setInvoiceNumber] = useState<string>('');
     const [errors, setErrors] = useState<FormErrors>({});
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoadingClients, setIsLoadingClients] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     useEffect(() => {
-        fetchClients();
-        fetchLastInvoiceNumber();
+        const fetchData = async () => {
+            await fetchClients();
+        };
+        fetchData();
     }, []);
 
     const fetchClients = async () => {
@@ -57,39 +59,8 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
         }
     };
 
-    const fetchLastInvoiceNumber = async () => {
-        try {
-            const token = localStorage.getItem('access_token');
-            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/invoices?page=1&per_page=1', {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            const data = await response.json();
-            if (data.status && data.data.length > 0) {
-                setInvoiceNumber(data.data[0].invoice_number);
-            } else {
-                setInvoiceNumber('00001');
-            }
-        } catch (error) {
-            setInvoiceNumber('00001');
-        }
-    };
-
-    const validate = (): FormErrors => {
-        const newErrors: FormErrors = {};
-        if (!formData.client_id) newErrors.client_id = 'رقم الاشتراك مطلوب';
-        if (!formData.date) newErrors.date = 'التاريخ مطلوب';
-        if (!formData.amount.trim()) newErrors.amount = 'قيمة الفاتورة مطلوبة';
-        return newErrors;
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        const formErrors = validate();
-        if (Object.keys(formErrors).length > 0) {
-            setErrors(formErrors);
-            return;
-        }
-
         setErrors({});
         setIsSubmitting(true);
         try {
@@ -111,13 +82,14 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
             if (response.ok && data.status) {
                 toast.success('تم اعتماد الفاتورة بنجاح');
                 setFormData({ client_id: '', date: '', amount: '' });
-                fetchLastInvoiceNumber();
                 onInvoiceAdded();
+            } else if (data.errors) {
+                setErrors(data.errors);
             } else {
-                toast.error(data.message || 'حدث خطأ أثناء الحفظ');
+                setErrors({ general: data.message }); // تخزين الرسائل العامة مثل "المشترك منتهي"
             }
         } catch (error) {
-            toast.error('حدث خطأ أثناء الاتصال بالخادم');
+            setErrors({ general: 'حدث خطأ أثناء الاتصال بالخادم' });
         } finally {
             setIsSubmitting(false);
         }
@@ -170,15 +142,6 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
 
             <div className="grid grid-cols-1 gap-4">
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الفاتورة</label>
-                    <input
-                        type="text"
-                        value={invoiceNumber}
-                        disabled
-                        className="w-full rounded-md border border-gray-300 bg-gray-100 py-1.5 sm:py-2 px-3 text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-                    />
-                </div>
-                <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الاشتراك</label>
                     {isLoadingClients ? (
                         <div className="w-full rounded-md border border-gray-300 bg-gray-100 dark:bg-gray-700 h-10 flex items-center justify-center">
@@ -212,7 +175,8 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                             }}
                         />
                     )}
-                    {errors.client_id && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.client_id}</span>}
+                    {errors.client_id && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.client_id[0]}</span>}
+                    {errors.general && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.general}</span>}
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">التاريخ</label>
@@ -223,7 +187,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                         onChange={handleInputChange}
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
-                    {errors.date && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.date}</span>}
+                    {errors.date && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.date[0]}</span>}
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">قيمة الفاتورة (د.ك)</label>
@@ -237,7 +201,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                         pattern="[0-9,]*"
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
-                    {errors.amount && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount}</span>}
+                    {errors.amount && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount[0]}</span>}
                 </div>
             </div>
 
