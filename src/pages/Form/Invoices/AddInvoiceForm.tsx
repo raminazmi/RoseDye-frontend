@@ -47,7 +47,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
         try {
             setIsLoadingClients(true);
             const token = localStorage.getItem('access_token');
-            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/clients', {
+            const response = await fetch('http://localhost:8000/api/v1/clients', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
@@ -65,7 +65,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/invoices', {
+            const response = await fetch('http://localhost:8000/api/v1/invoices', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

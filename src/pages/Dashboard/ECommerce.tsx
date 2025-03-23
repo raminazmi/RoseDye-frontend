@@ -33,7 +33,7 @@ const ECommerce: React.FC = () => {
           throw new Error('لم يتم العثور على رمز الوصول');
         }
 
-        const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/statistics', {
+        const response = await fetch('http://localhost:8000/api/v1/statistics', {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',

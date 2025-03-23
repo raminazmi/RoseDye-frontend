@@ -142,7 +142,7 @@ const ChartOne: React.FC = () => {
             endpoint = 'monthly';
         }
 
-        const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/statistics/${endpoint}`, {
+        const response = await fetch(`http://localhost:8000/api/v1/statistics/${endpoint}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,

@@ -98,7 +98,7 @@ const OTPForm: React.FC = () => {
 
     const code = otp.join('');
     try {
-      const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/verify-otp', {
+      const response = await fetch('http://localhost:8000/api/v1/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone, otp: code, temp_token: tempToken }),
@@ -134,7 +134,7 @@ const OTPForm: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/resend-otp', {
+      const response = await fetch('http://localhost:8000/api/v1/resend-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone }),

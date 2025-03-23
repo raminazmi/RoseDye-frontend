@@ -29,7 +29,7 @@ const DropdownUser = () => {
       }
 
       try {
-        const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/user', {
+        const response = await axios.get('http://localhost:8000/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(response.data.user);
