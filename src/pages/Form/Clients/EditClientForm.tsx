@@ -86,13 +86,11 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
         }));
     }, [client.phone]);
 
-    // دالة لتنسيق الأرقام بإضافة الفواصل
     const formatBalance = (value: string) => {
-        const numericValue = value.replace(/[^0-9.]/g, '');
+        const numericValue = value.replace(/[^0-9.-]/g, '');
         return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
-    // دالة لحساب الرصيد الحالي بناءً على القيمة الأساسية والهدية الإضافية
     const calculateCurrentBalance = (base: string, additionalGift: string) => {
         const baseValue = parseFloat(base.replace(/,/g, '')) || 0;
         const additionalGiftValue = parseFloat(additionalGift.replace(/,/g, '')) || 0;
@@ -100,7 +98,6 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
         return formatBalance(newBalance.toString());
     };
 
-    // التعامل مع اختيار الباقة (تعيين الهدية وعدد الأيام فقط)
     const handlePackageSelect = (pkg: typeof packages[number]) => {
         const startDate = formData.start_date || new Date().toISOString().split('T')[0];
         const endDate = new Date(startDate);
@@ -324,7 +321,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                         value={formData.current_balance}
                         onChange={handleInputChange}
                         inputMode="numeric"
-                        pattern="[0-9,]*"
+                        pattern="[0-9,-]*"
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     />
                     {errors.current_balance && (
@@ -341,7 +338,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                         placeholder="0"
                         onChange={handleInputChange}
                         inputMode="numeric"
-                        pattern="[0-9,]*"
+                        pattern="[0-9,-]*"
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     />
                     {errors.renewal_balance && (
@@ -358,7 +355,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                         value={formData.additional_gift}
                         onChange={handleInputChange}
                         inputMode="numeric"
-                        pattern="[0-9,]*"
+                        pattern="[0-9,-]*"
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     />
                     {errors.additional_gift && (

@@ -63,20 +63,8 @@ const SignIn: React.FC = () => {
 
     return (
         <div className="flex flex-wrap items-center">
-            <div className="w-full xl:block xl:w-1/2">
-                <div className="py-6 px-4 md:py-12 md:px-18 text-center">
-                    <Link to="/" className="mb-5.5 flex justify-center items-center gap-2">
-                        <img src={Logo} alt="Logo" className="w-8 h-8 rounded-md" />
-                        <h2 className="text-[#1C2434] dark:text-white text-xl font-bold">مصبغة عطر الورد</h2>
-                    </Link>
-                    <span className="mt-15 inline-block">
-                        <img src={Signin} alt="Illustration" className="md:w-[480px] md:h-[370px]" />
-                    </span>
-                </div>
-            </div>
-
-            <div className="w-full xl:w-1/2">
-                <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
+            <div className="xsm:min-w-[420px] xl:min-w-[420px] ">
+                <div className="w-full p-6 sm:p-12.5 xl:p-10">
                     <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
                         تسجيل الدخول
                     </h2>
@@ -95,7 +83,7 @@ const SignIn: React.FC = () => {
                                     type="email"
                                     placeholder="أدخل بريدك الإلكتروني"
                                     className={`w-full rounded-lg border ${errors.email ? 'border-red-500' : 'border-stroke'
-                                        } bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary`}
+                                        } bg-transparent py-3 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary`}
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                 />
@@ -115,7 +103,7 @@ const SignIn: React.FC = () => {
                                     type="password"
                                     placeholder="6+ أحرف، 1 حرف كبير"
                                     className={`w-full rounded-lg border ${errors.password ? 'border-red-500' : 'border-stroke'
-                                        } bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary`}
+                                        } bg-transparent py-3 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary`}
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                 />

@@ -59,7 +59,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
     }, []);
 
     const formatBalance = (value: string) => {
-        const numericValue = value.replace(/[^0-9.]/g, '');
+        const numericValue = value.replace(/[^0-9.-]/g, '');
         return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
     };
 
@@ -131,7 +131,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     phone: `${countryCode}${formData.phone.startsWith('0') ? formData.phone.slice(1) : formData.phone}`,
                     current_balance: formData.current_balance.replace(/,/g, '') || '0',
                     renewal_balance: formData.renewal_balance.replace(/,/g, '') || '0',
-                    original_gift: formData.original_gift.replace(/,/g, '') || '0', // إضافة original_gift
+                    original_gift: formData.original_gift.replace(/,/g, '') || '0', 
                     additional_gift: formData.additional_gift.replace(/,/g, '') || '0',
                 }),
             });
@@ -293,7 +293,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                         value={formData.current_balance}
                         onChange={handleInputChange}
                         inputMode="numeric"
-                        pattern="[0-9,]*"
+                        pattern="[0-9,-]*"
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     />
                     {errors.current_balance && <span className="text-red-500 text-sm mt-1 block">{errors.current_balance[0]}</span>}
@@ -308,7 +308,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                         placeholder="0"
                         onChange={handleInputChange}
                         inputMode="numeric"
-                        pattern="[0-9,]*"
+                        pattern="[0-9,-]*"
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     />
                     {errors.renewal_balance && <span className="text-red-500 text-sm mt-1 block">{errors.renewal_balance[0]}</span>}
@@ -323,7 +323,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                         value={formData.additional_gift}
                         onChange={handleInputChange}
                         inputMode="numeric"
-                        pattern="[0-9,]*"
+                        pattern="[0-9,-]*"
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     />
                     {errors.additional_gift && <span className="text-red-500 text-sm mt-1 block">{errors.additional_gift[0]}</span>}

@@ -24,7 +24,7 @@ interface SubscriptionDetails {
     name: string;
     subscription_number: string;
     phone: string;
-    current_balance: number | string;
+    current_balance: number;
     renewal_balance?: number;
   };
   invoices: Invoice[];
@@ -75,7 +75,7 @@ const SubscriptionDetailsPage = () => {
           ...data.data.subscription,
           client: {
             ...data.data.subscription.client,
-            current_balance: Number(data.data.subscription.client.current_balance),
+            current_balance: Number(data.data.subscription.client.current_balance), 
           },
         };
 
@@ -135,6 +135,9 @@ const SubscriptionDetailsPage = () => {
   };
 
   const statusStyles = getStatusStyles(subscription.status);
+  const formatBalance = (balance: number) => {
+    return balance.toLocaleString();
+  };
 
   return (
     <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
@@ -145,7 +148,7 @@ const SubscriptionDetailsPage = () => {
         </h4>
         <div className="flex gap-4 flex-wrap justify-center items-center">
           <button className="bg-primary text-white rounded-lg py-2 px-4 w-full xsm:w-fit">
-            الرصيد الحالي: {Number(subscription.client.current_balance).toFixed(2)} دينار
+            الرصيد الحالي: {formatBalance(subscription.client.current_balance)} دينار
           </button>
           <button className="bg-green-600 text-white rounded-lg py-2 px-4 w-full xsm:w-fit">
             ينتهي في: {new Date(subscription.end_date).toLocaleDateString('ar-EG')}
@@ -174,7 +177,7 @@ const SubscriptionDetailsPage = () => {
             <p className="text-sm dark:text-white">{invoice.invoice_number}</p>
           </div>
           <div className="col-span-1">
-            <p className="text-sm">{Number(invoice.amount).toFixed(2)} د.ك</p>
+            <p className="text-sm">{formatBalance(invoice.amount)} د.ك</p>
           </div>
         </div>
       ))}

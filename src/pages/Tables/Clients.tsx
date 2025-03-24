@@ -205,12 +205,12 @@ const Clients: React.FC = () => {
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                         <span className={client.current_balance < 0 ? 'text-red-500' : ''}>
-                          {client.current_balance} د.ك
+                          {client.current_balance.toLocaleString()} د.ك
                         </span>
-                        {client.additional_gift > 0 ? ` + ${client.additional_gift} هدية` : ''}
+                        {client.additional_gift > 0 ? ` + ${client.additional_gift.toLocaleString() } هدية` : ''}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.renewal_balance} د.ك
+                        {client.renewal_balance.toLocaleString()} د.ك
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center flex justify-center items-center gap-2">
                         <button

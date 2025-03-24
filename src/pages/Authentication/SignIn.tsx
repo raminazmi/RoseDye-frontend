@@ -69,19 +69,8 @@ const SignIn: React.FC = () => {
   );
 
   return (
-    <div className="flex flex-wrap items-center min-h-screen bg-gray-50 dark:bg-boxdark transition-colors duration-300">
-      <div className="w-full xl:block xl:w-1/2">
-        <div className="py-6 px-4 md:py-12 md:px-18 text-center">
-          <Link to="/" className="mb-5.5 flex justify-center items-center gap-2">
-            <img src={Logo} alt="Logo" className="w-8 h-8 rounded-md" />
-            <h2 className="text-[#1C2434] dark:text-white text-xl font-bold">مصبغة عطر الورد</h2>
-          </Link>
-          <span className="mt-15 inline-block">
-            <img src={Signin} alt="Illustration" className="md:w-[480px] md:h-[370px] object-contain" />
-          </span>
-        </div>
-      </div>
-      <div className="w-full xl:w-1/2 flex items-center justify-center">
+    <div className="transition-colors duration-300">
+      <div className="w-full flex items-center justify-center">
         <div className="w-full max-w-md p-6 sm:p-10 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl dark:shadow-gray-900 transition-all duration-300">
           <h2 className="mb-8 text-3xl font-extrabold text-gray-900 dark:text-white text-center">
             تسجيل الدخول
@@ -96,11 +85,11 @@ const SignIn: React.FC = () => {
               <label className="mb-3 block text-lg font-semibold text-gray-700 dark:text-gray-200">
                 رقم الهاتف
               </label>
-              <div className="flex items-center gap-3 bg-gray-100 dark:bg-gray-700 p-2 rounded-xl">
+              <div className="flex items-center justify-center gap-3 bg-gray-100 dark:bg-gray-700 p-2 rounded-xl">
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="w-1/3 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-3 pr-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 appearance-none transition-all duration-200"
+                  className="w-2/5 md:w-1/3 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-3 pr-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 appearance-none transition-all duration-200"
                 >
                   {filteredCountries.map((country, index) => (
                     <option
@@ -117,9 +106,9 @@ const SignIn: React.FC = () => {
                   <input
                     type="tel"
                     placeholder="123456789"
-                    className="flex-1 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-3 pr-10 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent py-2 pl-3 pr-10 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     value={phone}
-                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').replace(/^0/, ''))} // Updated here
+                    onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').replace(/^0/, ''))}
                     required
                   />
                   <span className="absolute right-3 top-2.5">

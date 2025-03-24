@@ -12,7 +12,7 @@ interface FormErrors {
     client_id?: string[];
     date?: string[];
     amount?: string[];
-    general?: string; // لتخزين الرسائل العامة مثل "المشترك منتهي" أو "المشترك موقوف"
+    general?: string;
 }
 
 interface Client {
@@ -35,10 +35,13 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
     const [clients, setClients] = useState<Client[]>([]);
     const [isLoadingClients, setIsLoadingClients] = useState(true);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [invoiceNumber, setInvoiceNumber] = useState<string>('');
+    const [isLoadingInvoiceNumber, setIsLoadingInvoiceNumber] = useState(true);
 
     useEffect(() => {
         const fetchData = async () => {
             await fetchClients();
+            await fetchNextInvoiceNumber();
         };
         fetchData();
     }, []);
@@ -47,15 +50,46 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
         try {
             setIsLoadingClients(true);
             const token = localStorage.getItem('access_token');
+            if (!token) {
+                toast.error('يرجى تسجيل الدخول أولاً');
+                return;
+            }
             const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/clients', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
             if (data.status) setClients(data.data);
+            else toast.error('فشل في جلب العملاء: ' + data.message);
         } catch (error) {
             toast.error('حدث خطأ أثناء جلب بيانات العملاء');
+            console.error(error);
         } finally {
             setIsLoadingClients(false);
+        }
+    };
+
+    const fetchNextInvoiceNumber = async () => {
+        try {
+            setIsLoadingInvoiceNumber(true);
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                toast.error('يرجى تسجيل الدخول أولاً');
+                return;
+            }
+            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/invoices/next-number', {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const data = await response.json();
+            if (response.ok && data.status) {
+                setInvoiceNumber(data.next_invoice_number);
+            } else {
+                toast.error('فشل في جلب رقم الفاتورة: ' + (data.message || 'خطأ غير محدد'));
+            }
+        } catch (error) {
+            toast.error('حدث خطأ أثناء جلب رقم الفاتورة التالي');
+            console.error(error);
+        } finally {
+            setIsLoadingInvoiceNumber(false);
         }
     };
 
@@ -82,11 +116,12 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
             if (response.ok && data.status) {
                 toast.success('تم اعتماد الفاتورة بنجاح');
                 setFormData({ client_id: '', date: '', amount: '' });
+                await fetchNextInvoiceNumber();
                 onInvoiceAdded();
             } else if (data.errors) {
                 setErrors(data.errors);
             } else {
-                setErrors({ general: data.message }); // تخزين الرسائل العامة مثل "المشترك منتهي"
+                setErrors({ general: data.message });
             }
         } catch (error) {
             setErrors({ general: 'حدث خطأ أثناء الاتصال بالخادم' });
@@ -141,6 +176,21 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
             </div>
 
             <div className="grid grid-cols-1 gap-4">
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الفاتورة</label>
+                    {isLoadingInvoiceNumber ? (
+                        <div className="w-full rounded-md border border-gray-300 bg-gray-100 dark:bg-gray-700 h-10 flex items-center justify-center">
+                            <span className="text-gray-500 dark:text-gray-400 text-sm">جارٍ التحميل...</span>
+                        </div>
+                    ) : (
+                        <input
+                            type="text"
+                            value={invoiceNumber}
+                            disabled
+                            className="w-full rounded-md border border-gray-300 bg-gray-100 py-1.5 sm:py-2 px-3 text-sm text-gray-900 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 transition-all duration-200"
+                        />
+                    )}
+                </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الاشتراك</label>
                     {isLoadingClients ? (
