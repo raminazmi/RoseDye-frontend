@@ -54,7 +54,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/clients', {
+            const response = await fetch('https://api.36rwrd.online/api/v1/clients', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
@@ -76,7 +76,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/invoices/next-number', {
+            const response = await fetch('https://api.36rwrd.online/api/v1/invoices/next-number', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
@@ -99,7 +99,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('access_token');
-            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/invoices', {
+            const response = await fetch('https://api.36rwrd.online/api/v1/invoices', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -137,7 +137,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
 
     const formatAmount = (value: string) => {
         const numericValue = value.replace(/[^0-9.]/g, '');
-        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return numericValue;
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

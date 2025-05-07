@@ -33,7 +33,7 @@ const ECommerce: React.FC = () => {
           throw new Error('لم يتم العثور على رمز الوصول');
         }
 
-        const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/statistics', {
+        const response = await fetch('https://api.36rwrd.online/api/v1/statistics', {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -84,10 +84,8 @@ const ECommerce: React.FC = () => {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">
         <CardDataStats
           title="قيمة الفواتير"
-          total={`${statistics.total_revenue.toFixed(2)} د.ك`}
-          rate={`${revenueRate}%`}
-          levelUp={revenueUp}
-          levelDown={!revenueUp}
+          total={`${statistics.total_revenue.toFixed(3)} د.ك`}
+          rate={``}
         >
           <FaMoneyBillWave className="fill-primary dark:fill-white w-6 h-6" />
         </CardDataStats>
@@ -95,9 +93,7 @@ const ECommerce: React.FC = () => {
         <CardDataStats
           title="إجمالي الفواتير"
           total={`${statistics.total_invoices}`}
-          rate={`${totalInvoicesRate}%`}
-          levelUp={totalInvoicesUp}
-          levelDown={!totalInvoicesUp}
+          rate={``}
         >
           <FaFileInvoice className="fill-primary dark:fill-white w-6 h-6" />
         </CardDataStats>
@@ -105,9 +101,7 @@ const ECommerce: React.FC = () => {
         <CardDataStats
           title="عدد المشتركين"
           total={statistics.active_subscriptions.toString()}
-          rate={`${subscriptionsRate}%`}
-          levelUp={subscriptionsUp}
-          levelDown={!subscriptionsUp}
+          rate={``}
         >
           <FaUsers className="fill-primary dark:fill-white w-6 h-6" />
         </CardDataStats>

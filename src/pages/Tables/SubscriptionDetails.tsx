@@ -53,7 +53,7 @@ const SubscriptionDetailsPage = () => {
           throw new Error('لم يتم العثور على رمز الوصول');
         }
 
-        const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/${id}?page=${currentPage}&per_page=${itemsPerPage}`, {
+        const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${id}?page=${currentPage}&per_page=${itemsPerPage}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -75,7 +75,7 @@ const SubscriptionDetailsPage = () => {
           ...data.data.subscription,
           client: {
             ...data.data.subscription.client,
-            current_balance: Number(data.data.subscription.client.current_balance), 
+            current_balance: Number(data.data.subscription.client.current_balance),
           },
         };
 

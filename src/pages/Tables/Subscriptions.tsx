@@ -29,7 +29,9 @@ const Subscriptions: React.FC = () => {
   const [exportLoading, setExportLoading] = useState(false);
   const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<number | null>(null);
-  const [renewalCost, setRenewalCost] = useState<string>('');
+  const [giftAmount, setGiftAmount] = useState<string>('');
+  const [renewalCost, setRenewalCost] = useState<string>(''); // إعادة إضافة renewalCost
+
   const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -39,7 +41,7 @@ const Subscriptions: React.FC = () => {
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -61,7 +63,7 @@ const Subscriptions: React.FC = () => {
   const exportPdf = async () => {
     setExportLoading(true);
     try {
-      const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/export-pdf', {
+      const response = await axios.get('https://api.36rwrd.online/api/v1/subscriptions/export-pdf', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -86,7 +88,7 @@ const Subscriptions: React.FC = () => {
 
   const handleStatusChange = async (subscriptionId: number, newStatus: string) => {
     try {
-      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/${subscriptionId}/status`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -113,7 +115,7 @@ const Subscriptions: React.FC = () => {
       setSendingStatus((prev) => ({ ...prev, [subscriptionId]: true }));
       const subscription = subscriptions.find((sub) => sub.id === subscriptionId);
       const message = `تنبيه: اشتراكك رقم ${subscription?.subscription_number} على وشك الانتهاء بتاريخ ${subscription?.end_date}.`;
-      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/${subscriptionId}/notify`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -136,34 +138,41 @@ const Subscriptions: React.FC = () => {
 
   const openRenewModal = (subscriptionId: number) => {
     setSelectedSubscriptionId(subscriptionId);
-    setRenewalCost('');
+    setGiftAmount('');
+    setRenewalCost(''); // إعادة تعيين renewalCost
     setIsRenewModalOpen(true);
   };
 
   const closeRenewModal = () => {
     setIsRenewModalOpen(false);
     setSelectedSubscriptionId(null);
-    setRenewalCost('');
+    setGiftAmount('');
+    setRenewalCost(''); // إعادة تعيين renewalCost
   };
 
   const renewSubscription = async () => {
     if (!selectedSubscriptionId) return;
 
-    const cost = parseFloat(renewalCost);
-    if (isNaN(cost) || cost <= 0) {
-      toast.error('يرجى إدخال سعر تجديد صالح (رقم أكبر من 0)');
+    const gift = parseFloat(giftAmount) || 0;
+    const renewal = parseFloat(renewalCost);
+
+    if (isNaN(renewal) || renewal <= 0) {
+      toast.error('يرجى إدخال قيمة تجديد صالحة (أكبر من 0)');
       return;
     }
 
     try {
       setRenewingStatus((prev) => ({ ...prev, [selectedSubscriptionId]: true }));
-      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
-        body: JSON.stringify({ renewal_cost: cost }),
+        body: JSON.stringify({
+          renewal_cost: renewal,
+          gift: gift,
+        }),
       });
       const data = await response.json();
       if (data.status) {
@@ -181,10 +190,10 @@ const Subscriptions: React.FC = () => {
   };
 
   const getRowColor = (totalDue: number) => {
-    if (totalDue <= 30) return 'bg-green-100 dark:bg-green-900';
-    if (totalDue >= 35 && totalDue <= 40) return 'bg-orange-100 dark:bg-orange-900';
-    if (totalDue > 40) return 'bg-red-100 dark:bg-red-900';
-    return 'bg-white dark:bg-gray-800';
+    if (totalDue <= 30) return 'text-green-500 dark:bg-green-900';
+    if (totalDue >= 35 && totalDue <= 40) return 'text-orange-500 dark:bg-orange-900';
+    if (totalDue > 40) return 'text-red-500 dark:bg-red-900';
+    return 'text-white dark:bg-gray-800';
   };
 
   const formatAmount = (amount: number) => {
@@ -307,7 +316,7 @@ const Subscriptions: React.FC = () => {
               {subscriptions.map((subscription) => (
                 <tr
                   key={subscription.id}
-                  className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150 ${getRowColor(subscription.total_due)}`}
+                  className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150`}
                 >
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                     <Link
@@ -326,7 +335,7 @@ const Subscriptions: React.FC = () => {
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                     {formatAmount(subscription.total_inv)}
                   </td>
-                  <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
+                  <td className={`border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200 ${getRowColor(subscription.total_due)}`}>
                     {formatAmount(subscription.total_due)}
                   </td>
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
@@ -345,15 +354,13 @@ const Subscriptions: React.FC = () => {
                     </button>
                   </td>
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
-                    {subscription.status.toLowerCase() === 'expired' && (
-                      <button
-                        className={`bg-green-600 text-white rounded-lg py-2 px-4 ${renewingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                        onClick={() => openRenewModal(subscription.id)}
-                        disabled={renewingStatus[subscription.id]}
-                      >
-                        {renewingStatus[subscription.id] ? 'جاري التجديد...' : 'تجديد'}
-                      </button>
-                    )}
+                    <button
+                      className={`bg-green-600 text-white rounded-lg py-2 px-4 ${renewingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      onClick={() => openRenewModal(subscription.id)}
+                      disabled={renewingStatus[subscription.id]}
+                    >
+                      {renewingStatus[subscription.id] ? 'جاري التجديد...' : 'تجديد'}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -392,6 +399,20 @@ const Subscriptions: React.FC = () => {
                   onChange={(e) => setRenewalCost(e.target.value)}
                   className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                   placeholder="أدخل سعر التجديد"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
+                  قيمة الهدية (د.ك)
+                </label>
+                <input
+                  type="number"
+                  value={giftAmount}
+                  onChange={(e) => setGiftAmount(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
+                  placeholder="أدخل قيمة الهدية"
                   min="0"
                   step="0.01"
                 />

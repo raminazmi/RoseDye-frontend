@@ -53,7 +53,7 @@ const Clients: React.FC = () => {
         return;
       }
       setLoading(true);
-      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/clients?page=${currentPage}&per_page=${itemsPerPage}`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/clients?page=${currentPage}&per_page=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -95,7 +95,7 @@ const Clients: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/clients/${selectedClientId}`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/clients/${selectedClientId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -201,16 +201,16 @@ const Clients: React.FC = () => {
                         {client.subscriptions[0]?.end_date || '-'}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.subscriptions[0]?.duration_in_days || '-'} يوم 
+                        {client.subscriptions[0]?.duration_in_days || '-'} يوم
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                         <span className={client.current_balance < 0 ? 'text-red-500' : ''}>
                           {client.current_balance.toLocaleString()} د.ك
                         </span>
-                        {client.additional_gift > 0 ? ` + ${client.additional_gift.toLocaleString() } هدية` : ''}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                         {client.renewal_balance.toLocaleString()} د.ك
+                        {client.additional_gift > 0 ? ` + ${client.additional_gift.toLocaleString()} هدية` : ''}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center flex justify-center items-center gap-2">
                         <button

@@ -62,7 +62,7 @@ function App() {
     if (tempToken && !pathname.includes('/auth/otp-form')) {
       const verifyToken = async () => {
         try {
-          const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/verify-temp-token', {
+          const response = await fetch('https://api.36rwrd.online/api/v1/verify-temp-token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ temp_token: tempToken }),
@@ -208,7 +208,7 @@ function App() {
                     <Settings />
                   </>
                 </AdminProtectedRoute>
-              } 
+              }
             />
             <Route
               path="/chart"
@@ -232,7 +232,7 @@ function App() {
                 </AdminProtectedRoute>
               }
             />
-              <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </DefaultLayout>
       ) : (
@@ -274,7 +274,7 @@ function App() {
                 </>
               }
             />
-                <Route path="*" element={<Navigate to="/" replace />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </GuestLayout>
       )}

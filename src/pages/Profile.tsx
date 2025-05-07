@@ -14,7 +14,7 @@ interface User {
   phone: string;
   avatar: string;
   role: string;
-  bio?: string;   
+  bio?: string;
   facebook?: string;
   twitter?: string;
   linkedin?: string;
@@ -44,7 +44,7 @@ const Profile = () => {
       }
 
       try {
-        const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/user', {
+        const response = await axios.get('https://api.36rwrd.online/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data.user);
@@ -83,7 +83,7 @@ const Profile = () => {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const response = await axios.post('https://rosedye-backend-production.up.railway.app/api/v1/user/avatar', formData, {
+      const response = await axios.post('https://api.36rwrd.online/api/v1/user/avatar', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -97,7 +97,7 @@ const Profile = () => {
       handleError(error);
     }
   };
-  
+
   const handleProfileUpdate = async () => {
     const token = localStorage.getItem('access_token');
     if (!token) {
@@ -107,7 +107,7 @@ const Profile = () => {
 
     try {
       const response = await axios.put(
-        'https://rosedye-backend-production.up.railway.app/api/v1/user/profile',
+        'https://api.36rwrd.online/api/v1/user/profile',
         formData,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -310,7 +310,7 @@ const Profile = () => {
                   )}
                 </div>
               )}
-            </div>  
+            </div>
             <div className="mt-6">
               {isEditing ? (
                 <>
@@ -328,12 +328,12 @@ const Profile = () => {
                   </button>
                 </>
               ) : (
-                  <button
-                    onClick={() => setIsEditing(true)}
-                    className="rounded bg-primary py-2 px-4 text-white hover:bg-opacity-90"
-                  >
-                    تعديل الملف الشخصي
-                    </button>
+                <button
+                  onClick={() => setIsEditing(true)}
+                  className="rounded bg-primary py-2 px-4 text-white hover:bg-opacity-90"
+                >
+                  تعديل الملف الشخصي
+                </button>
               )}
             </div>
           </div>

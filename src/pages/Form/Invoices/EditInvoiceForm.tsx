@@ -50,7 +50,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/clients`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/clients`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -69,7 +69,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
 
     const fetchInvoice = async () => {
         try {
-            const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/invoices/${invoiceId}`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/invoices/${invoiceId}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
                 },
@@ -101,7 +101,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 return;
             }
 
-            const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/invoices/${invoiceId}`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/invoices/${invoiceId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -133,7 +133,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
 
     const formatAmount = (value: string) => {
         const numericValue = value.replace(/[^0-9.]/g, '');
-        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return numericValue;
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

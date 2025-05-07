@@ -29,7 +29,7 @@ const DropdownUser = () => {
       }
 
       try {
-        const response = await axios.get('https://rosedye-backend-production.up.railway.app/api/v1/user', {
+        const response = await axios.get('https://api.36rwrd.online/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(response.data.user);
@@ -99,16 +99,16 @@ const DropdownUser = () => {
               </Link>
             </li>
             {(user?.role == 'admin')
-            ?
-            <li>
-              <Link
-                to="/settings"
-                className="flex items-center gap-3 p-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-blue-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-blue-400 transition duration-200"
-              >
-                <FaCog className="text-gray-500 dark:text-gray-400" />
-                <span>إعدادت الحساب</span>
-              </Link>
-            </li>
+              ?
+              <li>
+                <Link
+                  to="/settings"
+                  className="flex items-center gap-3 p-2 text-sm font-medium text-gray-700 rounded-md hover:bg-gray-100 hover:text-blue-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-blue-400 transition duration-200"
+                >
+                  <FaCog className="text-gray-500 dark:text-gray-400" />
+                  <span>إعدادت الحساب</span>
+                </Link>
+              </li>
               : <li></li>
             }
           </ul>

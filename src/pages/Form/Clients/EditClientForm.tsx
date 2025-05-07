@@ -88,7 +88,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
 
     const formatBalance = (value: string) => {
         const numericValue = value.replace(/[^0-9.-]/g, '');
-        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return numericValue;
     };
 
     const calculateCurrentBalance = (base: string, additionalGift: string) => {
@@ -114,7 +114,6 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
         setSelectedPackage(pkg);
     };
 
-    // التعامل مع تغيير الإدخال
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
@@ -154,7 +153,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                 return;
             }
 
-            const response = await fetch(`https://rosedye-backend-production.up.railway.app/api/v1/clients/${client.id}`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/clients/${client.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -277,8 +276,8 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                                 key={index}
                                 onClick={() => handlePackageSelect(pkg)}
                                 className={`p-4 rounded-lg border ${selectedPackage?.durationDays === pkg.durationDays
-                                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900'
-                                        : 'border-gray-300 dark:border-gray-600'
+                                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900'
+                                    : 'border-gray-300 dark:border-gray-600'
                                     } transition-all duration-200`}
                             >
                                 <div className="text-lg font-semibold">{pkg.durationDays} يوم</div>

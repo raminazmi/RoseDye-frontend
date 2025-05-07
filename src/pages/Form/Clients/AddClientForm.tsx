@@ -60,7 +60,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
 
     const formatBalance = (value: string) => {
         const numericValue = value.replace(/[^0-9.-]/g, '');
-        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return numericValue;
     };
 
     const calculateCurrentBalance = (base: string, additionalGift: string) => {
@@ -90,21 +90,15 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
-        if (name === 'additional_gift' || name === 'original_gift') { // دعم original_gift
+        if (name === 'current_balance' ||
+            name === 'renewal_balance' ||
+            name === 'additional_gift') {
+
             const formattedValue = formatBalance(value);
             setFormData(prev => ({
                 ...prev,
-                [name]: formattedValue,
+                [name]: formattedValue
             }));
-        } else if (name === 'current_balance') {
-            const formattedValue = formatBalance(value);
-            setBaseCurrentBalance(formattedValue);
-            setFormData(prev => ({
-                ...prev,
-                [name]: formattedValue,
-            }));
-        } else if (name === 'renewal_balance') {
-            setFormData({ ...formData, [name]: formatBalance(value) });
         } else if (name === 'phone' || name === 'subscription_number') {
             setFormData({ ...formData, [name]: value.replace(/[^0-9]/g, '').replace(/^0/, '') });
         } else if (name === 'countryCode') {
@@ -120,7 +114,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('https://rosedye-backend-production.up.railway.app/api/v1/clients', {
+            const response = await fetch('https://api.36rwrd.online/api/v1/clients', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -131,7 +125,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     phone: `${countryCode}${formData.phone.startsWith('0') ? formData.phone.slice(1) : formData.phone}`,
                     current_balance: formData.current_balance.replace(/,/g, '') || '0',
                     renewal_balance: formData.renewal_balance.replace(/,/g, '') || '0',
-                    original_gift: formData.original_gift.replace(/,/g, '') || '0', 
+                    original_gift: formData.original_gift.replace(/,/g, '') || '0',
                     additional_gift: formData.additional_gift.replace(/,/g, '') || '0',
                 }),
             });
