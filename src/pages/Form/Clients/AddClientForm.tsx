@@ -216,7 +216,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                             {filteredCountries.map((country) => (
                                 <option key={country.code} value={country.code}>
                                     <img src={country.flag} alt={country.name} className="w-5 h-5 mr-2 inline" />
-                                    {country.code} ({country.arabicName})
+                                    {country.code}
                                 </option>
                             ))}
                         </select>

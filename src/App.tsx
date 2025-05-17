@@ -45,7 +45,7 @@ const AdminProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
 function App() {
   const [loading, setLoading] = useState<boolean>(true);
-  const { auth, user } = useAuth();
+  const { auth, user, checkSession } = useAuth();
   const { pathname } = useLocation();
   const navigate = useNavigate();
 
@@ -78,10 +78,23 @@ function App() {
       };
       verifyToken();
     }
-    if (auth && (pathname === '/login')) {
+  }, [auth, navigate, pathname]);
+
+  useEffect(() => {
+    if (auth && (pathname === '/login' || pathname === '/admin/login')) {
       navigate('/');
     }
   }, [auth, navigate, pathname]);
+
+  useEffect(() => {
+    if (auth) {
+      const interval = setInterval(() => {
+        checkSession();
+      }, 5 * 60 * 1000); // تحقق كل 5 دقائق
+
+      return () => clearInterval(interval);
+    }
+  }, [auth, checkSession]);
 
   const ProtectedSubscriptionDetails = () => {
     const { id } = useParams<{ id: string }>();
@@ -102,7 +115,6 @@ function App() {
       </>
     );
   };
-
 
   return loading ? (
     <Loader />

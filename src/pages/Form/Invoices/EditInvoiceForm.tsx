@@ -12,6 +12,7 @@ interface FormErrors {
     client_id?: string[];
     date?: string[];
     amount?: string[];
+    general?: string;
 }
 
 interface Client {
@@ -58,6 +59,8 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
             const data = await response.json();
             if (data.status) {
                 setClients(data.data);
+            } else {
+                toast.error('فشل في جلب العملاء: ' + data.message);
             }
         } catch (error) {
             console.error('Error fetching clients:', error);
@@ -69,9 +72,14 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
 
     const fetchInvoice = async () => {
         try {
+            const token = localStorage.getItem('access_token');
+            if (!token) {
+                toast.error('يرجى تسجيل الدخول أولاً');
+                return;
+            }
             const response = await fetch(`https://api.36rwrd.online/api/v1/invoices/${invoiceId}`, {
                 headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
+                    Authorization: `Bearer ${token}`,
                 },
             });
             const data = await response.json();
@@ -80,9 +88,11 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 setFormData({
                     client_id: invoice.client_id.toString(),
                     date: new Date(invoice.date).toISOString().split('T')[0],
-                    amount: invoice.amount.toLocaleString(),
+                    amount: invoice.amount.toString(),
                 });
                 setInvoiceNumber(invoice.invoice_number);
+            } else {
+                toast.error('فشل في جلب الفاتورة: ' + data.message);
             }
         } catch (error) {
             console.error('Error fetching invoice:', error);
@@ -110,7 +120,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 body: JSON.stringify({
                     client_id: formData.client_id,
                     date: formData.date,
-                    amount: formData.amount.replace(/,/g, '') || '0',
+                    amount: formData.amount,
                 }),
             });
 
@@ -118,28 +128,26 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
             if (response.ok && data.status) {
                 toast.success('تم تعديل الفاتورة بنجاح');
                 onInvoiceUpdated();
+                onClose();
             } else if (data.errors) {
                 setErrors(data.errors);
             } else {
-                toast.error(data.message || 'حدث خطأ أثناء التعديل');
+                setErrors({ general: data.message || 'حدث خطأ أثناء التعديل' });
             }
         } catch (error) {
             console.error('Error:', error);
-            toast.error('حدث خطأ أثناء الاتصال بالخادم');
+            setErrors({ general: 'حدث خطأ أثناء الاتصال بالخادم' });
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    const formatAmount = (value: string) => {
-        const numericValue = value.replace(/[^0-9.]/g, '');
-        return numericValue;
-    };
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         if (name === 'amount') {
-            setFormData({ ...formData, [name]: formatAmount(value) });
+            if (value === '' || /^(\d*\.?\d*)$/.test(value)) {
+                setFormData({ ...formData, [name]: value });
+            }
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -155,8 +163,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
     }));
 
     const filterOption = (option: any, inputValue: string) => {
-        const searchValue = inputValue.toLowerCase();
-        return option.label.toLowerCase().includes(searchValue);
+        return option.label.toLowerCase().includes(inputValue.toLowerCase());
     };
 
     return (
@@ -220,6 +227,9 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                     {errors.client_id && (
                         <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.client_id[0]}</span>
                     )}
+                    {errors.general && (
+                        <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.general}</span>
+                    )}
                 </div>
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">التاريخ</label>
@@ -235,15 +245,14 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">قيمة الفاتورة</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">قيمة الفاتورة (د.ك)</label>
                     <input
                         type="text"
                         name="amount"
-                        placeholder="0"
+                        placeholder="مثال: 35.250"
                         value={formData.amount}
                         onChange={handleInputChange}
-                        inputMode="numeric"
-                        pattern="[0-9,]*"
+                        inputMode="decimal"
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
                     {errors.amount && (
@@ -270,7 +279,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 <button
                     type="button"
                     onClick={onClose}
-                    className="flex w-full sm:w-1/2 justify-center rounded bg-red-700 p-3 font-medium text-white hover:bg-opacity-90"
+                    className="flex w-full sm:w-1/2 justify-center rounded bg-red-700 p-3 font-medium text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700 transition-all duration-200"
                 >
                     <span>إلغاء</span>
                 </button>

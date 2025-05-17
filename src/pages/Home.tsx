@@ -4,8 +4,8 @@ import Logo from '../../public/logo.jpg';
 
 const Home: React.FC = () => {
     return (
-        <div className="flex items-center justify-center bg-gray-50">
-            <div className="text-center p-8 border border-stroke bg-white shadow-lg dark:bg-boxdark dark:border-strokedark">
+        <div>
+            <div className="text-center p-8 border border-stroke bg-white shadow-lg rounded-xl dark:bg-boxdark dark:border-strokedark">
                 <Link to="/" className="mb-5.5 flex justify-center items-center gap-2">
                     <img src={Logo} alt="Logo" className="w-8 h-8 rounded-md" />
                     <h2 className="text-[#1C2434] dark:text-white text-xl font-bold">مصبغة عطر الورد</h2>

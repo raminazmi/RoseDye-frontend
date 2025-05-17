@@ -13,6 +13,7 @@ const SignIn: React.FC = () => {
     const [password, setPassword] = useState('');
     const [errors, setErrors] = useState<{ [key: string]: string }>({});
     const [loading, setLoading] = useState(false);
+    const [rememberMe, setRememberMe] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -36,7 +37,7 @@ const SignIn: React.FC = () => {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                 },
-                body: JSON.stringify({ email, password }),
+                body: JSON.stringify({ email, password, remember_me: rememberMe }),
                 credentials: 'include',
             });
 
@@ -52,7 +53,7 @@ const SignIn: React.FC = () => {
             }
 
             const data = await response.json();
-            login(data.access_token, data.user);
+            login(data.access_token, data.user, rememberMe);
             navigate('/');
         } catch (err) {
             setErrors({ general: 'حدث خطأ أثناء الاتصال بالخادم' });
@@ -94,7 +95,7 @@ const SignIn: React.FC = () => {
                             {errors.email && <p className="mt-1 text-red-500 text-sm">{errors.email}</p>}
                         </div>
 
-                        <div className="mb-6">
+                        <div className="mb-4">
                             <label className="mb-2.5 block font-medium text-black dark:text-white">
                                 كلمة المرور
                             </label>
@@ -112,6 +113,19 @@ const SignIn: React.FC = () => {
                                 </span>
                             </div>
                             {errors.password && <p className="mt-1 text-red-500 text-sm">{errors.password}</p>}
+                        </div>
+
+                        <div className="mb-8 flex items-center">
+                            <input
+                                type="checkbox"
+                                id="rememberMe"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                                className="ml-2 w-4 h-4 text-primary rounded focus:ring-primary"
+                            />
+                            <label htmlFor="rememberMe" className="text-sm text-gray-600 dark:text-gray-300">
+                                تذكرني
+                            </label>
                         </div>
 
                         <div className="mb-5">

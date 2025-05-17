@@ -201,7 +201,7 @@ const Clients: React.FC = () => {
                         {client.subscriptions[0]?.end_date || '-'}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.subscriptions[0]?.duration_in_days || '-'} يوم
+                        {(client.subscriptions[0]?.duration_in_days - 1) || '-'} يوم
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                         <span className={client.current_balance < 0 ? 'text-red-500' : ''}>

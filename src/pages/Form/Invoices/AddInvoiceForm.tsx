@@ -28,7 +28,7 @@ interface AddInvoiceFormProps {
 const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose }) => {
     const [formData, setFormData] = useState<FormData>({
         client_id: '',
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         amount: '',
     });
     const [errors, setErrors] = useState<FormErrors>({});
@@ -108,14 +108,14 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 body: JSON.stringify({
                     client_id: formData.client_id,
                     date: formData.date,
-                    amount: formData.amount.replace(/,/g, '') || '0',
+                    amount: formData.amount, // إرسال القيمة كما هي
                 }),
             });
 
             const data = await response.json();
             if (response.ok && data.status) {
                 toast.success('تم اعتماد الفاتورة بنجاح');
-                setFormData({ client_id: '', date: '', amount: '' });
+                setFormData({ client_id: '', date: new Date().toISOString().split('T')[0], amount: '' });
                 await fetchNextInvoiceNumber();
                 onInvoiceAdded();
             } else if (data.errors) {
@@ -131,19 +131,17 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
     };
 
     const handleClear = () => {
-        setFormData({ ...formData, client_id: '', amount: '' });
+        setFormData({ client_id: '', date: new Date().toISOString().split('T')[0], amount: '' });
         setErrors({});
-    };
-
-    const formatAmount = (value: string) => {
-        const numericValue = value.replace(/[^0-9.]/g, '');
-        return numericValue;
     };
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         if (name === 'amount') {
-            setFormData({ ...formData, [name]: formatAmount(value) });
+            // السماح فقط بالأرقام والنقطة العشرية، مع منع إدخال أكثر من نقطة واحدة
+            if (value === '' || /^(\d*\.?\d*)$/.test(value)) {
+                setFormData({ ...formData, [name]: value });
+            }
         } else {
             setFormData({ ...formData, [name]: value });
         }
@@ -244,11 +242,10 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                     <input
                         type="text"
                         name="amount"
-                        placeholder="0"
+                        placeholder="مثال: 35.250"
                         value={formData.amount}
                         onChange={handleInputChange}
-                        inputMode="numeric"
-                        pattern="[0-9,]*"
+                        inputMode="decimal"
                         className="w-full rounded-md border border-gray-300 bg-white py-1.5 sm:py-2 px-3 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100 dark:focus:ring-blue-400 transition-all duration-200"
                     />
                     {errors.amount && <span className="text-red-500 text-xs sm:text-sm mt-1 block">{errors.amount[0]}</span>}

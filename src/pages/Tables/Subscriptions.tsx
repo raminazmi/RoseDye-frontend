@@ -30,7 +30,7 @@ const Subscriptions: React.FC = () => {
   const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
   const [selectedSubscriptionId, setSelectedSubscriptionId] = useState<number | null>(null);
   const [giftAmount, setGiftAmount] = useState<string>('');
-  const [renewalCost, setRenewalCost] = useState<string>(''); // إعادة إضافة renewalCost
+  const [renewalCost, setRenewalCost] = useState<string>('');
 
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -139,7 +139,7 @@ const Subscriptions: React.FC = () => {
   const openRenewModal = (subscriptionId: number) => {
     setSelectedSubscriptionId(subscriptionId);
     setGiftAmount('');
-    setRenewalCost(''); // إعادة تعيين renewalCost
+    setRenewalCost('');
     setIsRenewModalOpen(true);
   };
 
@@ -147,7 +147,7 @@ const Subscriptions: React.FC = () => {
     setIsRenewModalOpen(false);
     setSelectedSubscriptionId(null);
     setGiftAmount('');
-    setRenewalCost(''); // إعادة تعيين renewalCost
+    setRenewalCost('');
   };
 
   const renewSubscription = async () => {
@@ -349,6 +349,7 @@ const Subscriptions: React.FC = () => {
                       className={`bg-meta-3 text-white rounded-lg py-2 px-4 ${sendingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                       onClick={() => sendNotification(subscription.id)}
                       disabled={sendingStatus[subscription.id]}
+                      title="إرسال تنبيه انتهاء الاشتراك إلى العميل"
                     >
                       {sendingStatus[subscription.id] ? 'جاري الإرسال...' : 'إرسال تنبيه'}
                     </button>
