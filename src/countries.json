@@ -4,5 +4,11 @@
         "name": "Kuwait",
         "arabicName": "الكويت",
         "flag": "https://flagcdn.com/kw.svg"
+    },
+    {
+        "code": "+970",
+        "name": "Palestine",
+        "arabicName": "فلسطين",
+        "flag": "https://flagcdn.com/kw.svg"
     }
 ]

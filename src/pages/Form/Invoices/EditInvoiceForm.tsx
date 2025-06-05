@@ -102,41 +102,54 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.client_id) {
+            setErrors({ client_id: ['رجى اختيار رقم الاشتراك'] });
+            toast.error('رجى اختيار رقم الاشتراك');
+            return;
+        }
+
         setErrors({});
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('access_token');
             if (!token) {
                 toast.error('يرجى تسجيل الدخول أولاً');
+                setErrors({ general: 'يرجى تسجيل الدخول أولاً' });
                 return;
             }
 
+            const payload = {
+                client_id: parseInt(formData.client_id),
+                date: formData.date,
+                amount: parseFloat(formData.amount) || 0,
+            };
+            console.log('Updating Invoice:', payload);
             const response = await fetch(`https://api.36rwrd.online/api/v1/invoices/${invoiceId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    client_id: formData.client_id,
-                    date: formData.date,
-                    amount: formData.amount,
-                }),
+                body: JSON.stringify(payload),
             });
 
             const data = await response.json();
+            console.log('Response:', { status: response.status, data });
             if (response.ok && data.status) {
                 toast.success('تم تعديل الفاتورة بنجاح');
                 onInvoiceUpdated();
                 onClose();
             } else if (data.errors) {
                 setErrors(data.errors);
+                toast.error('يرجى تصحيح الأخطاء في النموذج');
             } else {
-                setErrors({ general: data.message || 'حدث خطأ أثناء التعديل' });
+                setErrors({ general: data.message || 'فشل في تعديل الفاتورة' });
+                toast.error(data.message || 'فشل في تعديل الفاتورة');
             }
         } catch (error) {
-            console.error('Error:', error);
+            console.error('Fetch Error:', error);
             setErrors({ general: 'حدث خطأ أثناء الاتصال بالخادم' });
+            toast.error('حدث خطأ أثناء الاتصال بالخادم');
         } finally {
             setIsSubmitting(false);
         }
@@ -279,7 +292,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 <button
                     type="button"
                     onClick={onClose}
-                    className="flex w-full sm:w-1/2 justify-center rounded bg-red-700 p-3 font-medium text-white hover:bg-red-800 dark:bg-red-600 dark:hover:bg-red-700 transition-all duration-200"
+                    className="flex w-full sm:w-1/2 justify-center rounded bg-red-700 p-3 font-medium text-white hover:bg-red-800 dark:bg-gray-600 dark:hover:bg-gray-700 transition-colors duration-200"
                 >
                     <span>إلغاء</span>
                 </button>

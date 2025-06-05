@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Loader from '../../common/Loader';
@@ -10,7 +10,7 @@ interface Invoice {
   invoice_number: string;
   amount: number;
   status: string;
-  due_date: string;
+  due_date?: string;
 }
 
 interface SubscriptionDetails {
@@ -21,11 +21,10 @@ interface SubscriptionDetails {
   status: string;
   client: {
     id: number;
-    name: string;
+    name?: string;
     subscription_number: string;
     phone: string;
     current_balance: number;
-    renewal_balance?: number;
   };
   invoices: Invoice[];
 }
@@ -38,6 +37,7 @@ interface PaginationData {
 
 const SubscriptionDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [subscription, setSubscription] = useState<SubscriptionDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -48,24 +48,52 @@ const SubscriptionDetailsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('access_token');
+        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
         if (!token) {
-          throw new Error('لم يتم العثور على رمز الوصول');
+          throw new Error('يرجى تسجيل الدخول أولاً');
+        }
+
+        const userData = localStorage.getItem('user');
+        const user = userData ? JSON.parse(userData) : null;
+        const clientId = localStorage.getItem('client_id');
+
+        if (!clientId && user?.role !== 'admin') {
+          throw new Error('لا يوجد معرف عميل مرتبط');
         }
 
         const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${id}?page=${currentPage}&per_page=${itemsPerPage}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
+            Accept: 'application/json',
           },
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(`خطأ في الشبكة: ${response.status} - ${errorData.message || 'غير معروف'}`);
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+          const text = await response.text();
+          console.error('Non-JSON Response:', text);
+          throw new Error('استجابة الخادم غير صالحة');
         }
 
         const data = await response.json();
+
+        if (!response.ok) {
+          if (response.status === 401) {
+            localStorage.removeItem('auth_token');
+            sessionStorage.removeItem('auth_token');
+            localStorage.removeItem('client_id');
+            localStorage.removeItem('user');
+            navigate('/login');
+            throw new Error('انتهت جلسة تسجيل الدخول، يرجى تسجيل الدخول مجددًا');
+          } else if (response.status === 403) {
+            navigate('/');
+            throw new Error(data.message || 'غير مصرح لك بالوصول إلى هذا الاشتراك');
+          } else if (response.status === 404) {
+            throw new Error('الاشتراك غير موجود');
+          }
+          throw new Error(data.message || `خطأ في الشبكة: ${response.status}`);
+        }
 
         if (!data.status) {
           throw new Error(data.message || 'فشل في جلب البيانات');
@@ -76,6 +104,7 @@ const SubscriptionDetailsPage = () => {
           client: {
             ...data.data.subscription.client,
             current_balance: Number(data.data.subscription.client.current_balance),
+            name: data.data.subscription.client.name || 'غير محدد',
           },
         };
 
@@ -91,7 +120,7 @@ const SubscriptionDetailsPage = () => {
     };
 
     fetchData();
-  }, [id, currentPage, itemsPerPage]);
+  }, [id, currentPage, itemsPerPage, navigate]);
 
   if (loading) {
     return <Loader />;
@@ -136,7 +165,7 @@ const SubscriptionDetailsPage = () => {
 
   const statusStyles = getStatusStyles(subscription.status);
   const formatBalance = (balance: number) => {
-    return balance.toLocaleString();
+    return balance.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   return (

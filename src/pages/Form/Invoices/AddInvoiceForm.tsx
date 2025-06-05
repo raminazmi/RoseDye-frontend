@@ -95,36 +95,56 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!formData.client_id) {
+            setErrors({ client_id: ['رجى اختيار رقم الاشتراك'] });
+            toast.error('رجى اختيار رقم الاشتراك');
+            return;
+        }
+
         setErrors({});
         setIsSubmitting(true);
         try {
             const token = localStorage.getItem('access_token');
+            if (!token) {
+                toast.error('يرجى تسجيل الدخول أولاً');
+                setErrors({ general: 'يرجى تسجيل الدخول أولاً' });
+                return;
+            }
+
+            const payload = {
+                client_id: parseInt(formData.client_id),
+                date: formData.date,
+                amount: parseFloat(formData.amount) || 0,
+            };
+            console.log('Submitting Invoice:', payload);
             const response = await fetch('https://api.36rwrd.online/api/v1/invoices', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    client_id: formData.client_id,
-                    date: formData.date,
-                    amount: formData.amount, // إرسال القيمة كما هي
-                }),
+                body: JSON.stringify(payload),
             });
 
             const data = await response.json();
+            console.log('Response:', { status: response.status, data });
             if (response.ok && data.status) {
                 toast.success('تم اعتماد الفاتورة بنجاح');
                 setFormData({ client_id: '', date: new Date().toISOString().split('T')[0], amount: '' });
                 await fetchNextInvoiceNumber();
                 onInvoiceAdded();
+                onClose();
             } else if (data.errors) {
                 setErrors(data.errors);
+                toast.error('يرجى تصحيح الأخطاء في النموذج');
             } else {
-                setErrors({ general: data.message });
+                setErrors({ general: data.message || 'فشل في إنشاء الفاتورة' });
+                toast.error(data.message || 'فشل في إنشاء الفاتورة');
             }
         } catch (error) {
+            console.error('Fetch Error:', error);
             setErrors({ general: 'حدث خطأ أثناء الاتصال بالخادم' });
+            toast.error('حدث خطأ أثناء الاتصال بالخادم');
         } finally {
             setIsSubmitting(false);
         }
@@ -138,7 +158,6 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
         if (name === 'amount') {
-            // السماح فقط بالأرقام والنقطة العشرية، مع منع إدخال أكثر من نقطة واحدة
             if (value === '' || /^(\d*\.?\d*)$/.test(value)) {
                 setFormData({ ...formData, [name]: value });
             }

@@ -37,16 +37,10 @@ const SignIn: React.FC = () => {
         body: JSON.stringify({ phone: fullPhone, remember_me: rememberMe }),
       });
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Response is not JSON');
-      }
-
       const data = await response.json();
-
       if (!response.ok) {
-        if (data.errors) {
-          setError(Object.values(data.errors).join(', '));
+        if (data.message === 'لا يمكن تسجيل الدخول. اشتراكك موقوف.') {
+          setError('لا يمكن تسجيل الدخول. اشتراكك موقوف.');
         } else {
           setError(data.message || 'خطأ في تسجيل الدخول');
         }

@@ -12,11 +12,10 @@ const OTPForm: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const phone = JSON.parse(localStorage.getItem('client') || '{}').phone;
+  const client = JSON.parse(localStorage.getItem('client') || '{}');
+  const phone = client.phone;
   const tempToken = localStorage.getItem('temp_token');
   const savedRememberMe = localStorage.getItem('rememberMe') === 'true';
-  const storedClientId = localStorage.getItem('client_id');
-  const [clientId, setClientId] = useState<string | null>(storedClientId || null);
 
   useEffect(() => {
     setRememberMe(savedRememberMe);
@@ -124,14 +123,14 @@ const OTPForm: React.FC = () => {
           phone,
           otp: code,
           temp_token: tempToken,
-          remember_me: rememberMe
+          remember_me: rememberMe,
         }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        if (errorData.errors) {
-          setError(Object.values(errorData.errors).join(', '));
+        if (errorData.message === 'لا يمكن تسجيل الدخول. اشتراكك موقوف.') {
+          setError('لا يمكن تسجيل الدخول. اشتراكك موقوف.');
         } else {
           setError(errorData.message || 'رمز التحقق غير صحيح');
         }
@@ -140,23 +139,41 @@ const OTPForm: React.FC = () => {
       }
 
       const data = await response.json();
-      const client = JSON.parse(localStorage.getItem('client') || '{}');
+      const user = {
+        id: data.client_id,
+        phone: client.phone,
+        role: 'user', // Assuming non-admin for clients
+      };
 
-      login(data.access_token, client, rememberMe);
-      localStorage.setItem('client_id', data.client_id);
-      localStorage.setItem('user', JSON.stringify(client));
+      login(data.access_token, user, rememberMe);
+      localStorage.setItem('client_id', data.client_id.toString());
+      localStorage.setItem('user', JSON.stringify(user));
 
       if (rememberMe) {
-        localStorage.setItem('access_token', data.access_token);
+        localStorage.setItem('auth_token', data.access_token);
       } else {
-        sessionStorage.setItem('access_token', data.access_token);
+        sessionStorage.setItem('auth_token', data.access_token);
       }
 
       localStorage.removeItem('temp_token');
       localStorage.removeItem('client');
       localStorage.removeItem('rememberMe');
 
-      navigate(`/subscribers/${clientId || ''}`);
+      // Fetch user's subscription to get the subscription ID
+      const subscriptionResponse = await fetch(`https://api.36rwrd.online/api/v1/subscriptions?client_id=${data.client_id}`, {
+        headers: {
+          Authorization: `Bearer ${data.access_token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+      const subscriptionData = await subscriptionResponse.json();
+      const subscriptionId = subscriptionData.data?.[0]?.id || null;
+
+      if (subscriptionId) {
+        navigate(`/subscribers/${subscriptionId}`);
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       setError('حدث خطأ أثناء التحقق');
       console.error(err);

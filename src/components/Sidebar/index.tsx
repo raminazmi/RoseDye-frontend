@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink } from 'react-router-dom';
 import Logo from '../../../public/logo.jpg';
 import {
@@ -8,6 +8,8 @@ import {
   FiUserPlus,
   FiDollarSign,
   FiList,
+  FiAlertTriangle,
+  FiClock,
 } from 'react-icons/fi';
 
 interface SidebarProps {
@@ -69,6 +71,8 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     { to: '/clients', label: 'إضافة عميل', icon: <FiUserPlus className="text-lg" /> },
     { to: '/invoices', label: 'إضافة فاتورة', icon: <FiDollarSign className="text-lg" /> },
     { to: '/subscribers', label: 'الاشتراكات', icon: <FiList className="text-lg" /> },
+    { to: '/abandoned-subscriptions', label: 'الاشتراكات المهملة', icon: <FiAlertTriangle className="text-lg" /> },
+    { to: '/expiring-soon-subscriptions', label: 'الاشتراكات المشارفة على الانتهاء', icon: <FiClock className="text-lg" /> },
     { to: '/settings', label: 'الإعدادات', icon: <FiSettings className="text-lg" /> },
   ];
 
@@ -99,7 +103,6 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         </svg>
       ),
     },
-    { to: '/profile', label: 'الملف الشخصي', icon: <FiUser className="text-lg" /> },
   ];
 
   const links = role === 'admin' ? adminLinks : userLinks;

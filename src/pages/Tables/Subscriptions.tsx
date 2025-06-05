@@ -114,7 +114,11 @@ const Subscriptions: React.FC = () => {
     try {
       setSendingStatus((prev) => ({ ...prev, [subscriptionId]: true }));
       const subscription = subscriptions.find((sub) => sub.id === subscriptionId);
-      const message = `تنبيه: اشتراكك رقم ${subscription?.subscription_number} على وشك الانتهاء بتاريخ ${subscription?.end_date}.`;
+      if (subscription?.status === 'canceled') {
+        toast.error('لا يمكن إرسال تنبيه لاشتراك موقوف');
+        return;
+      }
+      const message = `تنبيه: اشتراكك رقم ${subscription?.subscription_number} على وشك الانتهاء بتاريخ ${subscription?.end_date}. المتبقي ${subscription?.total_due} د.ك. الرجاء استخدامه قبل الانتهاء.`;
       const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
         method: 'POST',
         headers: {
@@ -137,6 +141,11 @@ const Subscriptions: React.FC = () => {
   };
 
   const openRenewModal = (subscriptionId: number) => {
+    const subscription = subscriptions.find((sub) => sub.id === subscriptionId);
+    if (subscription?.status === 'canceled') {
+      toast.error('لا يمكن تجديد اشتراك موقوف');
+      return;
+    }
     setSelectedSubscriptionId(subscriptionId);
     setGiftAmount('');
     setRenewalCost('');
@@ -345,23 +354,27 @@ const Subscriptions: React.FC = () => {
                     {getStatusDisplay(subscription)}
                   </td>
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
-                    <button
-                      className={`bg-meta-3 text-white rounded-lg py-2 px-4 ${sendingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      onClick={() => sendNotification(subscription.id)}
-                      disabled={sendingStatus[subscription.id]}
-                      title="إرسال تنبيه انتهاء الاشتراك إلى العميل"
-                    >
-                      {sendingStatus[subscription.id] ? 'جاري الإرسال...' : 'إرسال تنبيه'}
-                    </button>
+                    {subscription.status.toLowerCase() !== 'canceled' && (
+                      <button
+                        className={`bg-meta-3 text-white rounded-lg py-2 px-4 ${sendingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => sendNotification(subscription.id)}
+                        disabled={sendingStatus[subscription.id]}
+                        title="إرسال تنبيه انتهاء الاشتراك إلى العميل"
+                      >
+                        {sendingStatus[subscription.id] ? 'جاري الإرسال...' : 'إرسال تنبيه'}
+                      </button>
+                    )}
                   </td>
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
-                    <button
-                      className={`bg-green-600 text-white rounded-lg py-2 px-4 ${renewingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      onClick={() => openRenewModal(subscription.id)}
-                      disabled={renewingStatus[subscription.id]}
-                    >
-                      {renewingStatus[subscription.id] ? 'جاري التجديد...' : 'تجديد'}
-                    </button>
+                    {subscription.status.toLowerCase() !== 'canceled' && (
+                      <button
+                        className={`bg-green-600 text-white rounded-lg py-2 px-4 ${renewingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        onClick={() => openRenewModal(subscription.id)}
+                        disabled={renewingStatus[subscription.id]}
+                      >
+                        {renewingStatus[subscription.id] ? 'جاري التجديد...' : 'تجديد'}
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}

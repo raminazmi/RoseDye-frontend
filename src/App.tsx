@@ -19,6 +19,8 @@ import Invoices from './pages/Tables/Invoices';
 import OTPForm from './pages/Form/OTPForm';
 import SubscriptionTable from './pages/Tables/Subscriptions';
 import SubscriptionDetails from './pages/Tables/SubscriptionDetails';
+import AbandonedSubscriptions from './pages/Tables/AbandonedSubscriptions';
+import ExpiringSoonSubscriptions from './pages/Tables/ExpiringSoonSubscriptions';
 import { useAuth } from './context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from './components/Breadcrumbs/Breadcrumb';
@@ -101,7 +103,7 @@ function App() {
     const { user } = useAuth();
     const userId = localStorage.getItem('client_id');
 
-    if (user?.role !== 'admin' && id !== userId?.toString()) {
+    if (user?.role !== 'admin' && (id !== userId?.toString())) {
       return <Navigate to="/" replace />;
     }
 
@@ -206,6 +208,34 @@ function App() {
                     <Breadcrumb pageName="الاشتراكات" />
                     <div className="flex flex-col gap-10">
                       <SubscriptionTable />
+                    </div>
+                  </>
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/abandoned-subscriptions"
+              element={
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="الاشتراكات المهملة | لوحة التحكم مصبغة الورد" />
+                    <Breadcrumb pageName="الاشتراكات المهملة" />
+                    <div className="flex flex-col gap-10">
+                      <AbandonedSubscriptions />
+                    </div>
+                  </>
+                </AdminProtectedRoute>
+              }
+            />
+            <Route
+              path="/expiring-soon-subscriptions"
+              element={
+                <AdminProtectedRoute>
+                  <>
+                    <PageTitle title="الاشتراكات المشارفة على الانتهاء | لوحة التحكم مصبغة الورد" />
+                    <Breadcrumb pageName="الاشتراكات المشارفة على الانتهاء" />
+                    <div className="flex flex-col gap-10">
+                      <ExpiringSoonSubscriptions />
                     </div>
                   </>
                 </AdminProtectedRoute>
