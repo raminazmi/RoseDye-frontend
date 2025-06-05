@@ -41,7 +41,7 @@ const Subscriptions: React.FC = () => {
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`, {
+      const response = await fetch(`https://36rwrd.online/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -63,7 +63,7 @@ const Subscriptions: React.FC = () => {
   const exportPdf = async () => {
     setExportLoading(true);
     try {
-      const response = await axios.get('https://api.36rwrd.online/api/v1/subscriptions/export-pdf', {
+      const response = await axios.get('https://36rwrd.online/api/v1/subscriptions/export-pdf', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -88,7 +88,7 @@ const Subscriptions: React.FC = () => {
 
   const handleStatusChange = async (subscriptionId: number, newStatus: string) => {
     try {
-      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/status`, {
+      const response = await fetch(`https://36rwrd.online/api/v1/subscriptions/${subscriptionId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +119,7 @@ const Subscriptions: React.FC = () => {
         return;
       }
       const message = `تنبيه: اشتراكك رقم ${subscription?.subscription_number} على وشك الانتهاء بتاريخ ${subscription?.end_date}. المتبقي ${subscription?.total_due} د.ك. الرجاء استخدامه قبل الانتهاء.`;
-      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
+      const response = await fetch(`https://36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +172,7 @@ const Subscriptions: React.FC = () => {
 
     try {
       setRenewingStatus((prev) => ({ ...prev, [selectedSubscriptionId]: true }));
-      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
+      const response = await fetch(`https://36rwrd.online/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

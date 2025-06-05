@@ -29,7 +29,7 @@ const DropdownUser = () => {
       }
 
       try {
-        const response = await axios.get('https://api.36rwrd.online/api/v1/user', {
+        const response = await axios.get('https://36rwrd.online/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` }
         });
         setUser(response.data.user);

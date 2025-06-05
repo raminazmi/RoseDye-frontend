@@ -12,6 +12,12 @@ interface Subscription {
     client_phone: string;
     status: string;
     total_due: number;
+    client: {
+        subscription_number: string;
+        renewal_balance: number;
+        additional_gift: number;
+        phone: string;
+    };
 }
 
 const ExpiringSoonSubscriptions: React.FC = () => {
@@ -31,27 +37,31 @@ const ExpiringSoonSubscriptions: React.FC = () => {
         try {
             setLoading(true);
             const accessToken = localStorage.getItem('access_token');
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Access Token:', accessToken);
+            }
             if (!accessToken) {
                 toast.error('يرجى تسجيل الدخول أولاً');
                 navigate('/login');
                 return;
             }
 
-            const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/expiring-soon?page=${currentPage}&per_page=${itemsPerPage}`, {
+            const response = await fetch(`https://36rwrd.online/api/v1/subscriptions/expiring-soon?page=${currentPage}&per_page=${itemsPerPage}`, {
                 headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
                 },
             });
+
             const data = await response.json();
             if (data.status) {
                 setSubscriptions(data.data);
-                setTotalItems(data.total || data.data.length); // Use data.total if API provides it
+                setTotalItems(data.total || 0);
             } else {
                 toast.error(data.message || 'فشل في جلب البيانات');
             }
         } catch (error) {
-            toast.error('حدث خطأ أثناء جلب بيانات الاشتراكات المشارفة على الانتهاء');
+            console.error('Fetch error:', error);
+            toast.error('خطأ في جلب بيانات الاشتراكات المشارفة على الانتهاء');
         } finally {
             setLoading(false);
         }
@@ -73,12 +83,12 @@ const ExpiringSoonSubscriptions: React.FC = () => {
                 return;
             }
 
-            const message = `تنبيه: اشتراكك رقم ${subscription.subscription_number} على وشك الانتهاء بتاريخ ${formatDate(subscription.end_date)}. المتبقي ${subscription.total_due} د.ك. الرجاء استخدامه قبل الانتهاء.`;
-            const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
+            const message = `تنبيه: اشتراكك رقم ${subscription.client.subscription_number} على وشك الانتهاء بتاريخ ${formatDate(subscription.end_date)} المتبقي ${subscription.client.renewal_balance} + ${subscription.client.additional_gift} هدية الرجاء استخدامه قبل الانتهاء`;
+            const response = await fetch(`https://36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    Authorization: `Bearer ${accessToken}`,
+                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
                 },
                 body: JSON.stringify({ message }),
             });
@@ -89,6 +99,7 @@ const ExpiringSoonSubscriptions: React.FC = () => {
                 toast.error(data.message || 'فشل في إرسال التنبيه');
             }
         } catch (error) {
+            console.error('Notification error:', error);
             toast.error('حدث خطأ أثناء إرسال التنبيه');
         } finally {
             setSendingStatus((prev) => ({ ...prev, [subscriptionId]: false }));
@@ -143,14 +154,14 @@ const ExpiringSoonSubscriptions: React.FC = () => {
                                             to={`/subscribers/${subscription.id}`}
                                             className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200"
                                         >
-                                            {subscription.subscription_number}
+                                            {subscription.client.subscription_number}
                                         </Link>
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                                         {formatDate(subscription.end_date)}
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                                        {subscription.client_phone}
+                                        {subscription.client.phone}
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                                         {subscription.status === 'active' ? 'نشط' : subscription.status}

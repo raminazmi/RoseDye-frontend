@@ -3,7 +3,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Loader from '../../common/Loader';
 import Pagination from '../../components/Pagination';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface Subscription {
     id: number;
@@ -19,6 +19,7 @@ const AbandonedSubscriptions: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [itemsPerPage, setItemsPerPage] = useState(5);
     const [totalItems, setTotalItems] = useState(0);
+    const navigate = useNavigate();
 
     useEffect(() => {
         fetchAbandonedSubscriptions();
@@ -27,20 +28,46 @@ const AbandonedSubscriptions: React.FC = () => {
     const fetchAbandonedSubscriptions = async () => {
         try {
             setLoading(true);
-            const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/abandoned?page=${currentPage}&per_page=${itemsPerPage}`, {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                },
-            });
+            const accessToken = localStorage.getItem('access_token');
+            if (process.env.NODE_ENV === 'development') {
+                console.log('Access Token:', accessToken);
+            }
+            if (!accessToken) {
+                toast.error('يرجى تسجيل الدخول أولاً');
+                navigate('/login');
+                return;
+            }
+
+            const response = await fetch(
+                `https://36rwrd.online/api/v1/subscriptions/abandoned?page=${currentPage}&per_page=${itemsPerPage}`,
+                {
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                if (response.status === 404) {
+                    toast.error('الخدمة غير متوفرة حالياً، تحقق من إعدادات الخادم');
+                } else {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return;
+            }
+
             const data = await response.json();
+
             if (data.status) {
                 setSubscriptions(data.data);
-                setTotalItems(data.data.length); // Assuming no total provided, adjust if API returns total
+                setTotalItems(data.total);
             } else {
                 toast.error(data.message || 'فشل في جلب البيانات');
             }
         } catch (error) {
-            toast.error('حدث خطأ أثناء جلب بيانات الاشتراكات المهملة');
+            console.error('Fetch error:', error);
+            toast.error('خطأ في جلب بيانات الاشتراكات المهجورة');
         } finally {
             setLoading(false);
         }
@@ -57,7 +84,7 @@ const AbandonedSubscriptions: React.FC = () => {
     if (loading) return <Loader />;
 
     return (
-        <div className="rounded-lg border border-gray-200 bg-white shadow-lg dark:border-gray-700 dark:bg-gray-800 transition-all duration-300">
+        <div className="rounded-lg border border-gray-200 bg-white shadow-lg dark:bg-gray-800 transition-all duration-300">
             <ToastContainer
                 position="top-center"
                 autoClose={5000}
@@ -71,7 +98,7 @@ const AbandonedSubscriptions: React.FC = () => {
                 theme="colored"
             />
             <div className="border-b border-gray-200 py-4 px-6 dark:border-gray-700 flex justify-between items-center">
-                <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100">الاشتراكات المهملة</h3>
+                <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100">الاشتراكات المهجورة</h3>
             </div>
 
             <div className="p-6">
@@ -91,19 +118,18 @@ const AbandonedSubscriptions: React.FC = () => {
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                                         <Link
                                             to={`/subscribers/${subscription.id}`}
-                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200"
-                                        >
+                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200">
                                             {subscription.subscription_number}
                                         </Link>
                                     </td>
-                                    <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
+                                    <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-2 text-gray-800 dark:text-gray-200">
                                         {formatDate(subscription.end_date)}
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                                         {subscription.client_phone}
                                     </td>
-                                    <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                                        {subscription.status === 'expired' ? 'منتهي' : subscription.status}
+                                    <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 text-gray-dark:text-gray-200">
+                                        {subscription.status === 'active' ? 'نشط' : subscription.status}
                                     </td>
                                 </tr>
                             ))}
@@ -118,7 +144,7 @@ const AbandonedSubscriptions: React.FC = () => {
                     onItemsPerPageChange={setItemsPerPage}
                 />
             </div>
-        </div>
+        </div >
     );
 };
 

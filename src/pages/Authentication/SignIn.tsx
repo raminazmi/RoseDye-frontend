@@ -31,7 +31,7 @@ const SignIn: React.FC = () => {
     const fullPhone = `${countryCode}${cleanedPhone}`;
 
     try {
-      const response = await fetch('https://api.36rwrd.online/api/v1/client-login', {
+      const response = await fetch('https://36rwrd.online/api/v1/client-login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: fullPhone, remember_me: rememberMe }),

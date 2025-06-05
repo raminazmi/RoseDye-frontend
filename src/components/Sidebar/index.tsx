@@ -10,11 +10,28 @@ import {
   FiList,
   FiAlertTriangle,
   FiClock,
+  FiChevronDown,
+  FiChevronUp,
 } from 'react-icons/fi';
 
 interface SidebarProps {
   sidebarOpen: boolean;
   setSidebarOpen: (arg: boolean) => void;
+}
+
+// Define types for links
+interface SubLink {
+  to: string;
+  label: string;
+  icon: React.ReactNode;
+}
+
+interface LinkItem {
+  to?: string;
+  label: string;
+  icon?: React.ReactNode;
+  isDropdown?: boolean;
+  subLinks?: SubLink[];
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
@@ -24,13 +41,14 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
   const storedUser = localStorage.getItem('user');
   const user = storedUser ? JSON.parse(storedUser) : null;
   const storedClientId = localStorage.getItem('client_id');
-  const [clientId, setClientId] = useState<string | null>(storedClientId || null);
+  const [clientId] = useState<string | null>(storedClientId || null);
   const role = user?.role || 'user';
 
   const storedSidebarExpanded = localStorage.getItem('sidebar-expanded');
   const [sidebarExpanded, setSidebarExpanded] = useState<boolean>(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === 'true'
   );
+  const [isSubscriptionsOpen, setIsSubscriptionsOpen] = useState<boolean>(false);
 
   useEffect(() => {
     const clickHandler = ({ target }: MouseEvent) => {
@@ -39,13 +57,14 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
         !sidebarOpen ||
         sidebar.current.contains(target as Node) ||
         trigger.current.contains(target as Node)
-      )
+      ) {
         return;
+      }
       setSidebarOpen(false);
     };
     document.addEventListener('click', clickHandler);
     return () => document.removeEventListener('click', clickHandler);
-  });
+  }, [sidebarOpen, setSidebarOpen]);
 
   useEffect(() => {
     const keyHandler = ({ keyCode }: KeyboardEvent) => {
@@ -54,7 +73,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     };
     document.addEventListener('keydown', keyHandler);
     return () => document.removeEventListener('keydown', keyHandler);
-  });
+  }, [sidebarOpen, setSidebarOpen]);
 
   useEffect(() => {
     localStorage.setItem('sidebar-expanded', sidebarExpanded.toString());
@@ -65,18 +84,24 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     }
   }, [sidebarExpanded]);
 
-  const adminLinks = [
+  const adminLinks: LinkItem[] = [
     { to: '/', label: 'لوحة التحكم', icon: <FiGrid className="text-lg" /> },
+    {
+      label: 'الاشتراكات',
+      isDropdown: true,
+      subLinks: [
+        { to: '/subscribers', label: 'الاشتراكات', icon: <FiList className="text-base" /> },
+        { to: '/abandoned', label: 'الاشتراكات المهملة', icon: <FiAlertTriangle className="text-base" /> },
+        { to: '/expiring-soon', label: 'الاشتراكات المشارفة على الانتهاء', icon: <FiClock className="text-base" /> },
+      ],
+    },
+    { to: '/clients', label: 'العملاء', icon: <FiUserPlus className="text-lg" /> },
+    { to: '/invoices', label: 'الفواتير', icon: <FiDollarSign className="text-lg" /> },
     { to: '/profile', label: 'الملف الشخصي', icon: <FiUser className="text-lg" /> },
-    { to: '/clients', label: 'إضافة عميل', icon: <FiUserPlus className="text-lg" /> },
-    { to: '/invoices', label: 'إضافة فاتورة', icon: <FiDollarSign className="text-lg" /> },
-    { to: '/subscribers', label: 'الاشتراكات', icon: <FiList className="text-lg" /> },
-    { to: '/abandoned-subscriptions', label: 'الاشتراكات المهملة', icon: <FiAlertTriangle className="text-lg" /> },
-    { to: '/expiring-soon-subscriptions', label: 'الاشتراكات المشارفة على الانتهاء', icon: <FiClock className="text-lg" /> },
     { to: '/settings', label: 'الإعدادات', icon: <FiSettings className="text-lg" /> },
   ];
 
-  const userLinks = [
+  const userLinks: LinkItem[] = [
     {
       to: `/subscribers/${clientId || ''}`,
       label: 'اشتراكي',
@@ -111,8 +136,7 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
     <div>
       <aside
         ref={sidebar}
-        className={`absolute right-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'
-          }`}
+        className={`absolute right-0 top-0 z-9999 flex h-screen w-72.5 flex-col overflow-y-hidden bg-black duration-300 ease-linear dark:bg-boxdark lg:static lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex items-center justify-between gap-2 px-6 py-5.5 lg:py-6.5">
           <NavLink to="/" className="flex justify-center items-center gap-2">
@@ -148,15 +172,49 @@ const Sidebar: React.FC<SidebarProps> = ({ sidebarOpen, setSidebarOpen }) => {
               <ul className="mb-6 flex flex-col gap-1.5">
                 {links.map((link, index) => (
                   <li key={index}>
-                    <NavLink
-                      to={link.to}
-                      className={({ isActive }) =>
-                        `group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${isActive ? 'bg-graydark dark:bg-meta-4' : ''}`
-                      }
-                    >
-                      {link.icon}
-                      {link.label}
-                    </NavLink>
+                    {link.isDropdown ? (
+                      <div>
+                        <button
+                          onClick={() => setIsSubscriptionsOpen(!isSubscriptionsOpen)}
+                          className="group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 w-full text-right"
+                        >
+                          {link.icon}
+                          {link.label}
+                          {isSubscriptionsOpen ? (
+                            <FiChevronUp className="mr-auto text-lg" />
+                          ) : (
+                            <FiChevronDown className="mr-auto text-lg" />
+                          )}
+                        </button>
+                        {isSubscriptionsOpen && (
+                          <ul className="pr-4 mt-1 flex flex-col gap-1">
+                            {link.subLinks?.map((subLink, subIndex) => (
+                              <li key={subIndex}>
+                                <NavLink
+                                  to={subLink.to}
+                                  className={({ isActive }) =>
+                                    `group relative flex items-center gap-2.5 rounded-sm py-2 px-4 pr-6 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${isActive ? 'bg-graydark dark:bg-meta-4' : ''}`
+                                  }
+                                >
+                                  {subLink.icon}
+                                  {subLink.label}
+                                </NavLink>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
+                    ) : (
+                      <NavLink
+                        to={link.to!}
+                        className={({ isActive }) =>
+                          `group relative flex items-center gap-2.5 rounded-sm py-2 px-4 font-medium text-bodydark1 duration-300 ease-in-out hover:bg-graydark dark:hover:bg-meta-4 ${isActive ? 'bg-graydark dark:bg-meta-4' : ''}`
+                        }
+                      >
+                        {link.icon}
+                        {link.label}
+                      </NavLink>
+                    )}
                   </li>
                 ))}
               </ul>

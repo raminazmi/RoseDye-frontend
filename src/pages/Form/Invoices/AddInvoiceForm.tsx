@@ -54,7 +54,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch('https://api.36rwrd.online/api/v1/clients', {
+            const response = await fetch('https://36rwrd.online/api/v1/clients', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
@@ -76,7 +76,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch('https://api.36rwrd.online/api/v1/invoices/next-number', {
+            const response = await fetch('https://36rwrd.online/api/v1/invoices/next-number', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
@@ -117,7 +117,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 amount: parseFloat(formData.amount) || 0,
             };
             console.log('Submitting Invoice:', payload);
-            const response = await fetch('https://api.36rwrd.online/api/v1/invoices', {
+            const response = await fetch('https://36rwrd.online/api/v1/invoices', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

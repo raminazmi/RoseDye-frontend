@@ -33,7 +33,7 @@ const ECommerce: React.FC = () => {
           throw new Error('لم يتم العثور على رمز الوصول');
         }
 
-        const response = await fetch('https://api.36rwrd.online/api/v1/statistics', {
+        const response = await fetch('https://36rwrd.online/api/v1/statistics', {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',

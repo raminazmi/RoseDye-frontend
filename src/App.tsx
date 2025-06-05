@@ -64,7 +64,7 @@ function App() {
     if (tempToken && !pathname.includes('/auth/otp-form')) {
       const verifyToken = async () => {
         try {
-          const response = await fetch('https://api.36rwrd.online/api/v1/verify-temp-token', {
+          const response = await fetch('https://36rwrd.online/api/v1/verify-temp-token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ temp_token: tempToken }),
@@ -214,7 +214,7 @@ function App() {
               }
             />
             <Route
-              path="/abandoned-subscriptions"
+              path="/abandoned"
               element={
                 <AdminProtectedRoute>
                   <>
@@ -228,7 +228,7 @@ function App() {
               }
             />
             <Route
-              path="/expiring-soon-subscriptions"
+              path="/expiring-soon"
               element={
                 <AdminProtectedRoute>
                   <>

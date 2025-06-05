@@ -31,7 +31,7 @@ const SignIn: React.FC = () => {
         }
 
         try {
-            const response = await fetch('https://api.36rwrd.online/api/v1/login', {
+            const response = await fetch('https://36rwrd.online/api/v1/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

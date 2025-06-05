@@ -153,7 +153,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                 return;
             }
 
-            const response = await fetch(`https://api.36rwrd.online/api/v1/clients/${client.id}`, {
+            const response = await fetch(`https://36rwrd.online/api/v1/clients/${client.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
