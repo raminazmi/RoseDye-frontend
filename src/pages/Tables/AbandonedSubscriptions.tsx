@@ -39,7 +39,7 @@ const AbandonedSubscriptions: React.FC = () => {
             }
 
             const response = await fetch(
-                `https://36rwrd.online/api/v1/subscriptions/abandoned?page=${currentPage}&per_page=${itemsPerPage}`,
+                `https://api.36rwrd.online/api/v1/subscriptions/abandoned?page=${currentPage}&per_page=${itemsPerPage}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,

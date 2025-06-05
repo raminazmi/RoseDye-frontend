@@ -105,7 +105,7 @@ const ChartTwo: React.FC = () => {
           params.append('last_week', 'true');
         }
 
-        const response = await fetch(`https://36rwrd.online/api/v1/statistics/${endpoint}?${params.toString()}`, {
+        const response = await fetch(`https://api.36rwrd.online/api/v1/statistics/${endpoint}?${params.toString()}`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${token}`,
