@@ -4,7 +4,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import Loader from '../../common/Loader';
 import Pagination from '../../components/Pagination';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import ToggleSwitch from '../../components/ToggleSwitch';
 
 interface Subscription {
   id: number;
@@ -15,11 +16,14 @@ interface Subscription {
   total_inv: number;
   client_phone: string;
   status: string;
+  is_available: boolean;
+  subscription_number_id: number;
 }
 
 const Subscriptions: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [loading, setLoading] = useState(true);
+  const [togglingStatus, setTogglingStatus] = useState<{ [key: number]: boolean }>({});
   const [sendingStatus, setSendingStatus] = useState<{ [key: number]: boolean }>({});
   const [renewingStatus, setRenewingStatus] = useState<{ [key: number]: boolean }>({});
   const [editingStatusId, setEditingStatusId] = useState<number | null>(null);
@@ -33,6 +37,7 @@ const Subscriptions: React.FC = () => {
   const [renewalCost, setRenewalCost] = useState<string>('');
 
   const tableRef = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchSubscriptions();
@@ -41,29 +46,113 @@ const Subscriptions: React.FC = () => {
   const fetchSubscriptions = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-        },
-      });
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        toast.error('يرجى تسجيل الدخول أولاً');
+        navigate('/login');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8000/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          toast.error('انتهت جلسة تسجيل الدخول، يرجى تسجيل الدخول مجددًا');
+          navigate('/login');
+        } else {
+          const text = await response.text();
+          console.error('Non-JSON response:', text);
+          toast.error(`خطأ في جلب الاشتراكات (HTTP ${response.status})`);
+        }
+        return;
+      }
+
       const data = await response.json();
       if (data.status) {
-        setSubscriptions(data.data);
+        const formattedData = data.data.map((sub: any) => ({
+          ...sub,
+          is_available: sub.client?.subscription_number_id
+            ? sub.client.is_available !== undefined
+              ? sub.client.is_available
+              : true
+            : true,
+          subscription_number_id: sub.client?.subscription_number_id || null,
+        }));
+        setSubscriptions(formattedData);
         setTotalItems(data.total || 0);
       } else {
-        toast.error(data.message || 'فشل في جلب البيانات');
+        toast.error(data.message || 'فشل في جلب الاشتراكات');
       }
     } catch (error) {
-      toast.error('حدث خطأ أثناء جلب بيانات الاشتراكات');
+      console.error('Fetch error:', error);
+      toast.error(`خطأ في جلب الاشتراكات: ${error}`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const toggleAvailability = async (subscriptionNumberId: number) => {
+    try {
+      setTogglingStatus((prev) => ({ ...prev, [subscriptionNumberId]: true }));
+      const accessToken = localStorage.getItem('access_token');
+      if (!accessToken) {
+        toast.error('يرجى تسجيل الدخول أولاً');
+        navigate('/login');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:8000/api/v1/clients/subscription-numbers/${subscriptionNumberId}/toggle-availability`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      const data = await response.json();
+      if (response.ok && data.status) {
+        toast.success(data.message || 'تم تغيير حالة توفر رقم الاشتراك بنجاح');
+        setSubscriptions((prev) =>
+          prev.map((sub) =>
+            sub.subscription_number_id === subscriptionNumberId
+              ? { ...sub, is_available: data.data.is_available }
+              : sub
+          )
+        );
+        fetchSubscriptions();
+      } else {
+        if (response.status === 404) {
+          toast.error('رقم الاشتراك غير موجود');
+        } else if (response.status === 401) {
+          toast.error('انتهت جلسة تسجيل الدخول، يرجى تسجيل الدخول مجددًا');
+          navigate('/login');
+        } else {
+          toast.error(data.message || 'فشل في تغيير حالة التوفر');
+        }
+      }
+    } catch (error) {
+      console.error('Toggle error:', error);
+      toast.error('حدث خطأ أثناء تغيير حالة التوفر');
+    } finally {
+      setTogglingStatus((prev) => ({ ...prev, [subscriptionNumberId]: false }));
     }
   };
 
   const exportPdf = async () => {
     setExportLoading(true);
     try {
-      const response = await axios.get('https://api.36rwrd.online/api/v1/subscriptions/export-pdf', {
+      const response = await axios.get('http://localhost:8000/api/v1/subscriptions/export-pdf', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -88,7 +177,7 @@ const Subscriptions: React.FC = () => {
 
   const handleStatusChange = async (subscriptionId: number, newStatus: string) => {
     try {
-      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/status`, {
+      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${subscriptionId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -119,7 +208,7 @@ const Subscriptions: React.FC = () => {
         return;
       }
       const message = `تنبيه: اشتراكك رقم ${subscription?.subscription_number} على وشك الانتهاء بتاريخ ${subscription?.end_date}. المتبقي ${subscription?.total_due} د.ك. الرجاء استخدامه قبل الانتهاء.`;
-      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
+      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${subscriptionId}/notify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -172,7 +261,7 @@ const Subscriptions: React.FC = () => {
 
     try {
       setRenewingStatus((prev) => ({ ...prev, [selectedSubscriptionId]: true }));
-      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
+      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -217,8 +306,6 @@ const Subscriptions: React.FC = () => {
     return `${day}-${month}-${year}`;
   };
 
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
   const getStatusDisplay = (subscription: Subscription) => {
     if (editingStatusId === subscription.id) {
       return (
@@ -232,7 +319,6 @@ const Subscriptions: React.FC = () => {
         </select>
       );
     }
-
     switch (subscription.status.toLowerCase()) {
       case 'active':
         return (
@@ -248,9 +334,7 @@ const Subscriptions: React.FC = () => {
         );
       case 'expired':
         return (
-          <span
-            className="inline-block bg-red-500 text-white text-sm font-medium px-3 py-1 rounded-md dark:bg-red-600 dark:hover:bg-red-700"
-          >
+          <span className="inline-block bg-red-500 text-white text-sm font-medium px-3 py-1 rounded-md dark:bg-red-600 dark:hover:bg-red-700">
             منتهي
           </span>
         );
@@ -301,12 +385,11 @@ const Subscriptions: React.FC = () => {
           {exportLoading ? 'جاري التصدير...' : 'تصدير PDF'}
         </button>
       </div>
-
       <div className="p-6">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
+          انقر على الحالة لتغييرها (نشط/موقوف) أو استخدم المفتاح لتغيير حالة توفر الرقم
+        </p>
         <div className="overflow-x-auto" ref={tableRef}>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 font-medium">
-            انقر على الحالة لتغييرها بسهولة (نشط/موقوف)
-          </p>
           <table className="table-auto w-full bg-white dark:bg-gray-800 rounded-md shadow-sm">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-700">
@@ -317,7 +400,12 @@ const Subscriptions: React.FC = () => {
                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">المجموع المستحق</th>
                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الهاتف</th>
                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">الحالة</th>
-                <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">إرسال تنبيه</th>
+                {subscriptions.map((subscription) => (
+                  subscription.status.toLowerCase() !== 'canceled' && (
+                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">توفر رقم الإشتراك</th>
+                  ))
+                )}
+                < th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">إرسال تنبيه</th>
                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">إجراءات</th>
               </tr>
             </thead>
@@ -325,7 +413,7 @@ const Subscriptions: React.FC = () => {
               {subscriptions.map((subscription) => (
                 <tr
                   key={subscription.id}
-                  className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150`}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150"
                 >
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                     <Link
@@ -344,7 +432,11 @@ const Subscriptions: React.FC = () => {
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                     {formatAmount(subscription.total_inv)}
                   </td>
-                  <td className={`border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200 ${getRowColor(subscription.total_due)}`}>
+                  <td
+                    className={`border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200 ${getRowColor(
+                      subscription.total_due
+                    )}`}
+                  >
                     {formatAmount(subscription.total_due)}
                   </td>
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
@@ -353,10 +445,26 @@ const Subscriptions: React.FC = () => {
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
                     {getStatusDisplay(subscription)}
                   </td>
+                  <td className="… text-center">
+                    {subscription.subscription_number_id
+                      ? (
+                        <ToggleSwitch
+                          checked={subscription.is_available}
+                          onChange={() => toggleAvailability(subscription.subscription_number_id!)}
+                          disabled={togglingStatus[subscription.subscription_number_id!]}
+                        />
+                      )
+                      : (
+                        <span className="text-gray-400">—</span>
+                      )
+                    }
+                  </td>
+
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
                     {subscription.status.toLowerCase() !== 'canceled' && (
                       <button
-                        className={`bg-meta-3 text-white rounded-lg py-2 px-4 ${sendingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`bg-blue-600 text-white rounded-lg py-2 px-4 ${sendingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                         onClick={() => sendNotification(subscription.id)}
                         disabled={sendingStatus[subscription.id]}
                         title="إرسال تنبيه انتهاء الاشتراك إلى العميل"
@@ -368,7 +476,8 @@ const Subscriptions: React.FC = () => {
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
                     {subscription.status.toLowerCase() !== 'canceled' && (
                       <button
-                        className={`bg-green-600 text-white rounded-lg py-2 px-4 ${renewingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`bg-green-600 text-white rounded-lg py-2 px-4 ${renewingStatus[subscription.id] ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
                         onClick={() => openRenewModal(subscription.id)}
                         disabled={renewingStatus[subscription.id]}
                       >
@@ -383,81 +492,81 @@ const Subscriptions: React.FC = () => {
         </div>
         <Pagination
           currentPage={currentPage}
-          totalPages={totalPages}
+          totalPages={Math.ceil(totalItems / itemsPerPage)}
           onPageChange={setCurrentPage}
           itemsPerPage={itemsPerPage}
           onItemsPerPageChange={setItemsPerPage}
         />
       </div>
-
-      {isRenewModalOpen && selectedSubscriptionId && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 z-50 pt-20 sm:top-0 lg:right-72.5 backdrop-blur-sm flex justify-center items-center"
-          onClick={closeRenewModal}
-        >
+      {
+        isRenewModalOpen && selectedSubscriptionId && (
           <div
-            className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-sm sm:w-11/12 sm:max-w-md mx-4 shadow-xl overflow-y-auto max-h-[80vh]"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 pt-20 sm:top-0 lg:right-72.5 backdrop-blur-sm flex justify-center items-center"
+            onClick={closeRenewModal}
           >
-            <div className="text-center">
-              <h3 className="font-bold text-lg sm:text-xl text-gray-900 dark:text-gray-100 mb-4">
-                تجديد الاشتراك
-              </h3>
-              <div className="mb-4">
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  سعر التجديد (د.ك)
-                </label>
-                <input
-                  type="number"
-                  value={renewalCost}
-                  onChange={(e) => setRenewalCost(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
-                  placeholder="أدخل سعر التجديد"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              <div className="mb-4">
-                <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
-                  قيمة الهدية (د.ك)
-                </label>
-                <input
-                  type="number"
-                  value={giftAmount}
-                  onChange={(e) => setGiftAmount(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
-                  placeholder="أدخل قيمة الهدية"
-                  min="0"
-                  step="0.01"
-                />
-              </div>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button
-                  onClick={renewSubscription}
-                  className={`relative flex w-full sm:w-auto justify-center rounded bg-green-600 p-3 font-medium text-white ${renewingStatus[selectedSubscriptionId] ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={renewingStatus[selectedSubscriptionId]}
-                >
-                  {!renewingStatus[selectedSubscriptionId] ? (
-                    <span>تجديد</span>
-                  ) : (
-                    <span className="flex items-center gap-2 py-1">
-                      <span className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
-                      <p className="text-xs">جاري التجديد</p>
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={closeRenewModal}
-                  className="flex w-full sm:w-auto justify-center rounded bg-gray-500 p-3 font-medium text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm mt-2 sm:mt-0"
-                >
-                  <span>خروج</span>
-                </button>
+            <div
+              className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-sm sm:w-11/12 sm:max-w-md mx-4 shadow-xl overflow-y-auto max-h-[80vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <h3 className="font-bold text-lg sm:text-xl text-gray-900 dark:text-gray-100 mb-4">تجديد الاشتراك</h3>
+                <div className="mb-4">
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    سعر التجديد (د.ك)
+                  </label>
+                  <input
+                    type="number"
+                    value={renewalCost}
+                    onChange={(e) => setRenewalCost(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-blue-600 focus-visible:shadow-md dark:focus:border-blue-400 transition-all duration-200"
+                    placeholder="أدخل سعر التجديد"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div className="mb-4">
+                  <label className="mb-2 block text-sm font-medium text-gray-700 dark:text-gray-200">
+                    قيمة الهدية (د.ك)
+                  </label>
+                  <input
+                    type="number"
+                    value={giftAmount}
+                    onChange={(e) => setGiftAmount(e.target.value)}
+                    className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-blue-600 focus-visible:shadow-md dark:focus:border-blue-400 transition-all duration-200"
+                    placeholder="أدخل قيمة الهدية"
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <button
+                    onClick={renewSubscription}
+                    className={`relative flex w-full sm:w-auto justify-center rounded bg-green-600 p-3 font-medium text-white ${renewingStatus[selectedSubscriptionId] ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    disabled={renewingStatus[selectedSubscriptionId]}
+                  >
+                    {!renewingStatus[selectedSubscriptionId] ? (
+                      <span>تجديد</span>
+                    ) : (
+                      <span className="flex items-center gap-2 py-1">
+                        <span className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+                        <p className="text-xs">جاري التجديد</p>
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    onClick={closeRenewModal}
+                    className="flex w-full sm:w-auto justify-center rounded bg-gray-500 p-3 font-medium text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm mt-2 sm:mt-0"
+                  >
+                    <span>خروج</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

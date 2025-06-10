@@ -21,6 +21,7 @@ interface FormErrors {
     start_date?: string[];
     end_date?: string[];
     subscription_number?: string[];
+    original_gift?: string[];
     additional_gift?: string[];
 }
 
@@ -30,9 +31,9 @@ interface AddClientFormProps {
 }
 
 const packages = [
-    { durationDays: 60, gift: 15 },
-    { durationDays: 120, gift: 30 },
-    { durationDays: 180, gift: 45 },
+    { durationDays: 60, gift: 15, current_balance: 20, renewal_balance: 35 },
+    { durationDays: 120, gift: 30, current_balance: 40, renewal_balance: 70 },
+    { durationDays: 180, gift: 45, current_balance: 60, renewal_balance: 105 },
 ];
 
 const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose }) => {
@@ -46,7 +47,6 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         original_gift: '',
         additional_gift: '',
     });
-    const [baseCurrentBalance, setBaseCurrentBalance] = useState<string>('');
     const [errors, setErrors] = useState<FormErrors>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isClearing, setIsClearing] = useState(false);
@@ -63,24 +63,21 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         return numericValue;
     };
 
-    const calculateCurrentBalance = (base: string, additionalGift: string) => {
-        const baseValue = parseFloat(base.replace(/,/g, '')) || 0;
-        const additionalGiftValue = parseFloat(additionalGift.replace(/,/g, '')) || 0;
-        const newBalance = baseValue + additionalGiftValue;
-        return formatBalance(newBalance.toString());
-    };
-
     const handlePackageSelect = (pkg: typeof packages[number]) => {
         const startDate = formData.start_date || new Date().toISOString().split('T')[0];
         const endDate = new Date(startDate);
         endDate.setDate(endDate.getDate() + pkg.durationDays);
 
         const newAdditionalGift = formatBalance(pkg.gift.toString());
+        const newCurrentBalance = formatBalance(pkg.current_balance.toString());
+        const newRenewalBalance = formatBalance(pkg.renewal_balance.toString());
 
         setFormData(prev => ({
             ...prev,
             start_date: startDate,
             end_date: endDate.toISOString().split('T')[0],
+            current_balance: newCurrentBalance,
+            renewal_balance: newRenewalBalance,
             additional_gift: newAdditionalGift,
             original_gift: newAdditionalGift,
         }));
@@ -90,10 +87,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
-        if (name === 'current_balance' ||
-            name === 'renewal_balance' ||
-            name === 'additional_gift') {
-
+        if (name === 'current_balance' || name === 'renewal_balance' || name === 'additional_gift') {
             const formattedValue = formatBalance(value);
             setFormData(prev => ({
                 ...prev,
@@ -114,7 +108,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('https://api.36rwrd.online/api/v1/clients', {
+            const response = await fetch('http://localhost:8000/api/v1/clients', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -127,6 +121,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     renewal_balance: formData.renewal_balance.replace(/,/g, '') || '0',
                     original_gift: formData.original_gift.replace(/,/g, '') || '0',
                     additional_gift: formData.additional_gift.replace(/,/g, '') || '0',
+                    subscription_number: formData.subscription_number,
                 }),
             });
 
@@ -143,12 +138,13 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     original_gift: '',
                     additional_gift: '',
                 });
-                setBaseCurrentBalance('');
                 setCountryCode('+965');
                 setSelectedPackage(null);
                 onClientAdded();
             } else if (data.errors) {
                 setErrors(data.errors);
+            } else {
+                toast.error(data.message || 'فشل في حفظ العميل');
             }
         } catch (error) {
             toast.error('حدث خطأ أثناء الاتصال بالخادم');
@@ -166,11 +162,10 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                 renewal_balance: '',
                 start_date: '',
                 end_date: '',
-                original_gift: '',
                 subscription_number: '',
+                original_gift: '',
                 additional_gift: '',
             });
-            setBaseCurrentBalance('');
             setCountryCode('+965');
             setSelectedPackage(null);
             setErrors({});
@@ -245,7 +240,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                                 type="button"
                                 key={index}
                                 onClick={() => handlePackageSelect(pkg)}
-                                className={`p-3 md:p-4 rounded-lg border ${selectedPackage?.durationDays === pkg.durationDays ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : 'border-gray-300 dark:border-gray-600'} transition-all duration-200`}
+                                className={`p - 3 md: p - 4 rounded - lg border ${selectedPackage?.durationDays === pkg.durationDays ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : 'border-gray-300 dark:border-gray-600'} transition - all duration - 200`}
                             >
                                 <div className="text-md md:text-lg font-semibold mb-2 md:mb-0">{pkg.durationDays} يوم</div>
                                 <div className="text-xs md:text-sm text-gray-600 dark:text-gray-300">هدية {pkg.gift} دينار</div>
@@ -298,8 +293,8 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     <input
                         type="text"
                         name="renewal_balance"
-                        value={formData.renewal_balance}
                         placeholder="0"
+                        value={formData.renewal_balance}
                         onChange={handleInputChange}
                         inputMode="numeric"
                         pattern="[0-9,-]*"

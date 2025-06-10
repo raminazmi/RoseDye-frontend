@@ -48,7 +48,7 @@ const SubscriptionDetailsPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
+        const token = localStorage.getItem('access_token') || sessionStorage.getItem('access_token');
         if (!token) {
           throw new Error('يرجى تسجيل الدخول أولاً');
         }
@@ -61,7 +61,7 @@ const SubscriptionDetailsPage = () => {
           throw new Error('لا يوجد معرف عميل مرتبط');
         }
 
-        const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${id}?page=${currentPage}&per_page=${itemsPerPage}`, {
+        const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${id}?page=${currentPage}&per_page=${itemsPerPage}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -80,8 +80,8 @@ const SubscriptionDetailsPage = () => {
 
         if (!response.ok) {
           if (response.status === 401) {
-            localStorage.removeItem('auth_token');
-            sessionStorage.removeItem('auth_token');
+            localStorage.removeItem('access_token');
+            sessionStorage.removeItem('access_token');
             localStorage.removeItem('client_id');
             localStorage.removeItem('user');
             navigate('/login');
@@ -165,7 +165,7 @@ const SubscriptionDetailsPage = () => {
 
   const statusStyles = getStatusStyles(subscription.status);
   const formatBalance = (balance: number) => {
-    return balance.toLocaleString('ar-EG', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    return balance.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
   return (
@@ -180,7 +180,7 @@ const SubscriptionDetailsPage = () => {
             الرصيد الحالي: {formatBalance(subscription.client.current_balance)} دينار
           </button>
           <button className="bg-green-600 text-white rounded-lg py-2 px-4 w-full xsm:w-fit">
-            ينتهي في: {new Date(subscription.end_date).toLocaleDateString('ar-EG')}
+            ينتهي في: {new Date(subscription.end_date).toLocaleDateString('en-US')}
           </button>
           <button className={`${statusStyles.className} w-full xsm:w-fit`}>
             حالة الاشتراك: {statusStyles.text}

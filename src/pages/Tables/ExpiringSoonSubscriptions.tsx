@@ -46,7 +46,7 @@ const ExpiringSoonSubscriptions: React.FC = () => {
                 return;
             }
 
-            const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/expiring-soon?page=${currentPage}&per_page=${itemsPerPage}`, {
+            const response = await fetch(`http://localhost:8000/api/v1/subscriptions/expiring-soon?page=${currentPage}&per_page=${itemsPerPage}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
                 },
@@ -84,7 +84,7 @@ const ExpiringSoonSubscriptions: React.FC = () => {
             }
 
             const message = `تنبيه: اشتراكك رقم ${subscription.client.subscription_number} على وشك الانتهاء بتاريخ ${formatDate(subscription.end_date)} المتبقي ${subscription.client.renewal_balance} + ${subscription.client.additional_gift} هدية الرجاء استخدامه قبل الانتهاء`;
-            const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
+            const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${subscriptionId}/notify`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

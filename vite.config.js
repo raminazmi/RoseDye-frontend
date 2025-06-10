@@ -6,7 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'https://api.36rwrd.online/',
+        target: 'http://localhost:8000/',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api'),
         configure: (proxy, options) => {

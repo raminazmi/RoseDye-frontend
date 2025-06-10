@@ -22,7 +22,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!token) return;
 
         try {
-            const response = await fetch('https://api.36rwrd.online/api/v1/user', {
+            const response = await fetch('http://localhost:8000/api/v1/user', {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 

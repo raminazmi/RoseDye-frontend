@@ -24,6 +24,7 @@ import ExpiringSoonSubscriptions from './pages/Tables/ExpiringSoonSubscriptions'
 import { useAuth } from './context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import Breadcrumb from './components/Breadcrumbs/Breadcrumb';
+import SubscriptionNumbers from './pages/Tables/SubscriptionNumbers';
 
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const { auth } = useAuth();
@@ -64,7 +65,7 @@ function App() {
     if (tempToken && !pathname.includes('/auth/otp-form')) {
       const verifyToken = async () => {
         try {
-          const response = await fetch('https://api.36rwrd.online/api/v1/verify-temp-token', {
+          const response = await fetch('http://localhost:8000/api/v1/verify-temp-token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ temp_token: tempToken }),
@@ -102,9 +103,10 @@ function App() {
     const { id } = useParams<{ id: string }>();
     const { user } = useAuth();
     const userId = localStorage.getItem('client_id');
+    const [clientId] = useState<string | null>(userId || null);
 
     if (user?.role !== 'admin' && (id !== userId?.toString())) {
-      return <Navigate to="/" replace />;
+      return <Navigate to={`/subscribers/${clientId || ''}`} replace />;
     }
 
     return (
@@ -213,6 +215,17 @@ function App() {
                 </AdminProtectedRoute>
               }
             />
+            <Route path="/subscription-numbers" element={
+              <AdminProtectedRoute>
+                <>
+                  <PageTitle title="جدول الاشتراكات | لوحة التحكم مصبغة الورد" />
+                  <Breadcrumb pageName="الاشتراكات" />
+                  <div className="flex flex-col gap-10">
+                    <SubscriptionNumbers />
+                  </div>
+                </>
+              </AdminProtectedRoute>
+            } />
             <Route
               path="/abandoned"
               element={

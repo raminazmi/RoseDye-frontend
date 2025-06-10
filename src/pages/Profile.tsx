@@ -44,7 +44,7 @@ const Profile = () => {
       }
 
       try {
-        const response = await axios.get('https://api.36rwrd.online/api/v1/user', {
+        const response = await axios.get('http://localhost:8000/api/v1/user', {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUser(response.data.user);
@@ -83,7 +83,7 @@ const Profile = () => {
       const formData = new FormData();
       formData.append('avatar', file);
 
-      const response = await axios.post('https://api.36rwrd.online/api/v1/user/avatar', formData, {
+      const response = await axios.post('http://localhost:8000/api/v1/user/avatar', formData, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -107,7 +107,7 @@ const Profile = () => {
 
     try {
       const response = await axios.put(
-        'https://api.36rwrd.online/api/v1/user/profile',
+        'http://localhost:8000/api/v1/user/profile',
         formData,
         {
           headers: { Authorization: `Bearer ${token}` },

@@ -116,7 +116,7 @@ const OTPForm: React.FC = () => {
 
     const code = otp.join('');
     try {
-      const response = await fetch('https://api.36rwrd.online/api/v1/verify-otp', {
+      const response = await fetch('http://localhost:8000/api/v1/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -160,7 +160,7 @@ const OTPForm: React.FC = () => {
       localStorage.removeItem('rememberMe');
 
       // Fetch user's subscription to get the subscription ID
-      const subscriptionResponse = await fetch(`https://api.36rwrd.online/api/v1/subscriptions?client_id=${data.client_id}`, {
+      const subscriptionResponse = await fetch(`http://localhost:8000/api/v1/subscriptions?client_id=${data.client_id}`, {
         headers: {
           Authorization: `Bearer ${data.access_token}`,
           'Content-Type': 'application/json',
@@ -186,7 +186,7 @@ const OTPForm: React.FC = () => {
     setError(null);
 
     try {
-      const response = await fetch('https://api.36rwrd.online/api/v1/resend-otp', {
+      const response = await fetch('http://localhost:8000/api/v1/resend-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone }),
