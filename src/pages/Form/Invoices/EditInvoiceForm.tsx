@@ -17,7 +17,8 @@ interface FormErrors {
 
 interface Client {
     id: number;
-    subscription_number: string;
+    subscription_number: string | null;
+    phone: string;
 }
 
 interface EditInvoiceFormProps {
@@ -51,7 +52,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch(`http://localhost:8000/api/v1/clients`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/clients`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -77,7 +78,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch(`http://localhost:8000/api/v1/invoices/${invoiceId}`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/invoices/${invoiceId}`, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },
@@ -103,8 +104,8 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.client_id) {
-            setErrors({ client_id: ['رجى اختيار رقم الاشتراك'] });
-            toast.error('رجى اختيار رقم الاشتراك');
+            setErrors({ client_id: ['رجى اختيار العميل'] });
+            toast.error('رجى اختيار العميل');
             return;
         }
 
@@ -124,7 +125,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 amount: parseFloat(formData.amount) || 0,
             };
             console.log('Updating Invoice:', payload);
-            const response = await fetch(`http://localhost:8000/api/v1/invoices/${invoiceId}`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/invoices/${invoiceId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -172,7 +173,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
 
     const clientOptions = clients.map(client => ({
         value: client.id.toString(),
-        label: client.subscription_number,
+        label: client.subscription_number || `رقم الهاتف: ${client.phone}`,
     }));
 
     const filterOption = (option: any, inputValue: string) => {
@@ -203,7 +204,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                     />
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الاشتراك</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">العميل</label>
                     {isLoadingClients ? (
                         <div className="w-full rounded-md border border-gray-300 bg-gray-100 dark:bg-gray-700 h-10 flex items-center justify-center">
                             <span className="text-gray-500 dark:text-gray-400 text-sm">جارٍ التحميل...</span>
@@ -213,7 +214,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                             options={clientOptions}
                             onChange={handleClientSelect}
                             value={clientOptions.find(option => option.value === formData.client_id) || null}
-                            placeholder="ابحث عن رقم الاشتراك..."
+                            placeholder="ابحث عن العميل..."
                             isClearable
                             isSearchable
                             filterOption={filterOption}
@@ -292,7 +293,7 @@ const EditInvoiceForm: React.FC<EditInvoiceFormProps> = ({ invoiceId, onInvoiceU
                 <button
                     type="button"
                     onClick={onClose}
-                    className="flex w-full sm:w-1/2 justify-center rounded bg-red-700 p-3 font-medium text-white hover:bg-red-800 dark:bg-gray-600 dark:hover:bg-gray-700 transition-colors duration-200"
+                    className="flex w-full sm:w-1/2 justify-center rounded bg-red-700 p-3 font-medium text-white hover:bg-red-800 dark:bg-gray-600 dark:hover:bg-gray-700 transition-all duration-200"
                 >
                     <span>إلغاء</span>
                 </button>

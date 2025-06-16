@@ -11,7 +11,10 @@ interface Invoice {
   invoice_number: string;
   date: string;
   amount: number;
-  client: { subscription_number: string };
+  client: {
+    subscription_number: string,
+    phone: string
+  };
 }
 
 const Invoices: React.FC = () => {
@@ -35,7 +38,7 @@ const Invoices: React.FC = () => {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/v1/invoices?page=${currentPage}&per_page=${itemsPerPage}`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/invoices?page=${currentPage}&per_page=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -71,7 +74,7 @@ const Invoices: React.FC = () => {
 
     try {
       setIsDeleting(true);
-      const response = await fetch(`http://localhost:8000/api/v1/invoices/${selectedInvoiceId}`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/invoices/${selectedInvoiceId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
@@ -162,7 +165,7 @@ const Invoices: React.FC = () => {
                         {invoice.invoice_number}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {invoice.client.subscription_number}
+                        {invoice.client.subscription_number ? invoice.client.subscription_number : `رقم الهاتف: ${invoice.client.phone}`}
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                         {formatDate(invoice.date)}

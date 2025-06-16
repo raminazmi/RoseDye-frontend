@@ -1,4 +1,5 @@
 import React from 'react';
+import { FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 
 interface PaginationProps {
     currentPage: number;
@@ -15,7 +16,37 @@ const Pagination: React.FC<PaginationProps> = ({
     itemsPerPage,
     onItemsPerPageChange,
 }) => {
-    const pageNumbers = Array.from({ length: totalPages }, (_, i) => i + 1);
+    // توليد أرقام الصفحات (الصفحة الحالية ± 1) مع نقاط التوقف
+    const getPageNumbers = () => {
+        const startPage = Math.max(1, currentPage - 1);
+        const endPage = Math.min(totalPages, currentPage + 1);
+        const pages: (number | string)[] = [];
+
+        // إضافة الصفحة الأولى ونقاط التوقف إذا لزم الأمر
+        if (startPage > 1) {
+            pages.push(1);
+            if (startPage > 2) {
+                pages.push('...');
+            }
+        }
+
+        // إضافة الصفحات في النطاق
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+
+        // إضافة نقاط التوقف والصفحة الأخيرة إذا لزم الأمر
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                pages.push('...');
+            }
+            pages.push(totalPages);
+        }
+
+        return pages;
+    };
+
+    const pageNumbers = getPageNumbers();
 
     return (
         <div className="flex flex-col sm:flex-row justify-between items-center py-4 px-6 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
@@ -40,26 +71,35 @@ const Pagination: React.FC<PaginationProps> = ({
                     disabled={currentPage === 1}
                     className="px-3 py-1 rounded-md bg-blue-600 text-white disabled:bg-gray-400 disabled:cursor-not-allowed dark:bg-blue-500 dark:disabled:bg-gray-600 transition duration-200"
                 >
-                    السابق
+                    <FiChevronRight className="w-5 h-5" />
                 </button>
-                {pageNumbers.map((number) => (
-                    <button
-                        key={number}
-                        onClick={() => onPageChange(number)}
-                        className={`px-3 py-1 rounded-md ${currentPage === number
+                {pageNumbers.map((item, index) => (
+                    typeof item === 'number' ? (
+                        <button
+                            key={item}
+                            onClick={() => onPageChange(item)}
+                            className={`px-3 py-1 rounded-md ${currentPage === item
                                 ? 'bg-blue-700 text-white dark:bg-blue-600'
                                 : 'bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                            } transition duration-200`}
-                    >
-                        {number}
-                    </button>
+                                } transition duration-200`}
+                        >
+                            {item}
+                        </button>
+                    ) : (
+                        <span
+                            key={`ellipsis-${index}`}
+                            className="py-1 text-gray-700 dark:text-gray-300"
+                        >
+                            ...
+                        </span>
+                    )
                 ))}
                 <button
                     onClick={() => onPageChange(currentPage + 1)}
                     disabled={currentPage === totalPages}
                     className="px-3 py-1 rounded-md bg-blue-600 text-white disabled:bg-gray-400 disabled:cursor-not-allowed dark:bg-blue-500 dark:disabled:bg-gray-600 transition duration-200"
                 >
-                    التالي
+                    <FiChevronLeft className="w-5 h-5" />
                 </button>
             </div>
         </div>

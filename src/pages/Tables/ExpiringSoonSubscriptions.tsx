@@ -12,6 +12,7 @@ interface Subscription {
     client_phone: string;
     status: string;
     total_due: number;
+    days_remaining?: number;
     client: {
         subscription_number: string;
         renewal_balance: number;
@@ -46,7 +47,7 @@ const ExpiringSoonSubscriptions: React.FC = () => {
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/v1/subscriptions/expiring-soon?page=${currentPage}&per_page=${itemsPerPage}`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/expiring-soon?page=${currentPage}&per_page=${itemsPerPage}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('access_token')}`,
                 },
@@ -54,7 +55,10 @@ const ExpiringSoonSubscriptions: React.FC = () => {
 
             const data = await response.json();
             if (data.status) {
-                setSubscriptions(data.data);
+                setSubscriptions(data.data.map((sub: Subscription) => ({
+                    ...sub,
+                    days_remaining: Math.ceil((new Date(sub.end_date).getTime() - new Date().getTime()) / (1000 * 3600 * 24))
+                })));
                 setTotalItems(data.total || 0);
             } else {
                 toast.error(data.message || 'فشل في جلب البيانات');
@@ -84,7 +88,7 @@ const ExpiringSoonSubscriptions: React.FC = () => {
             }
 
             const message = `تنبيه: اشتراكك رقم ${subscription.client.subscription_number} على وشك الانتهاء بتاريخ ${formatDate(subscription.end_date)} المتبقي ${subscription.client.renewal_balance} + ${subscription.client.additional_gift} هدية الرجاء استخدامه قبل الانتهاء`;
-            const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${subscriptionId}/notify`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -142,6 +146,7 @@ const ExpiringSoonSubscriptions: React.FC = () => {
                                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الاشتراك</th>
                                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">تاريخ الانتهاء</th>
                                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الهاتف</th>
+                                <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الأيام المتبقية</th>
                                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الحالة</th>
                                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">إرسال تنبيه</th>
                             </tr>
@@ -150,18 +155,26 @@ const ExpiringSoonSubscriptions: React.FC = () => {
                             {subscriptions.map((subscription) => (
                                 <tr key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150">
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                                        <Link
-                                            to={`/subscribers/${subscription.id}`}
-                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200"
-                                        >
-                                            {subscription.client.subscription_number}
-                                        </Link>
+                                        {subscription.subscription_number ?
+                                            <Link to={`/subscribers/${subscription.id}`}>
+                                                <span className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200">
+                                                    {subscription.subscription_number}
+                                                </span>
+                                            </Link>
+                                            :
+                                            <span className="transition-colors duration-200">
+                                                -
+                                            </span>
+                                        }
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                                         {formatDate(subscription.end_date)}
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                                         {subscription.client.phone}
+                                    </td>
+                                    <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-red-500 dark:text-gray-200">
+                                        {subscription.days_remaining ?? '-'}
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                                         {subscription.status === 'active' ? 'نشط' : subscription.status}

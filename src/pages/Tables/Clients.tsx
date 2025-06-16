@@ -5,6 +5,7 @@ import AddClientForm from '../Form/Clients/AddClientForm';
 import EditClientForm from '../Form/Clients/EditClientForm';
 import Loader from '../../common/Loader';
 import Pagination from '../../components/Pagination';
+import { Link } from 'react-router-dom';
 
 export interface Subscription {
   id: number;
@@ -53,7 +54,7 @@ const Clients: React.FC = () => {
         return;
       }
       setLoading(true);
-      const response = await fetch(`http://localhost:8000/api/v1/clients?page=${currentPage}&per_page=${itemsPerPage}`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/clients?page=${currentPage}&per_page=${itemsPerPage}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -95,7 +96,7 @@ const Clients: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/v1/clients/${selectedClientId}`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/clients/${selectedClientId}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${token}`,
@@ -189,7 +190,25 @@ const Clients: React.FC = () => {
                       className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150"
                     >
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                        {client.subscription_number}
+                        {
+                          client.subscriptions.length > 0 ? (<>
+                            {
+                              client.subscription_number ?
+                                <Link to={`/subscribers/${client.subscriptions[0].id}`}>
+                                  <span className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200">
+                                    {client.subscription_number}
+                                  </span>
+                                </Link>
+                                :
+                                <span className="transition-colors duration-200">
+                                  -
+                                </span>
+                            }
+                          </>
+                          ) : (
+                            <span>{client.subscription_number || '-'}</span>
+                          )
+                        }
                       </td>
                       <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                         {client.phone}
@@ -248,78 +267,84 @@ const Clients: React.FC = () => {
         )}
       </div>
 
-      {isAddModalOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 z-50 pt-20 sm:top-0 lg:right-72.5 backdrop-blur-sm flex justify-center items-center"
-          onClick={() => setIsAddModalOpen(false)}
-        >
+      {
+        isAddModalOpen && (
           <div
-            className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-lg sm:w-11/12 sm:max-w-md mx-4 shadow-xl overflow-y-auto max-h-[80vh]"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 pt-20 sm:top-0 lg:right-72.5 backdrop-blur-sm flex justify-center items-center"
+            onClick={() => setIsAddModalOpen(false)}
           >
-            <AddClientForm onClientAdded={handleClientAdded} onClose={() => setIsAddModalOpen(false)} />
+            <div
+              className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-lg sm:w-11/12 sm:max-w-md mx-4 shadow-xl overflow-y-auto max-h-[80vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <AddClientForm onClientAdded={handleClientAdded} onClose={() => setIsAddModalOpen(false)} />
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {isEditModalOpen && selectedClientId && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 z-50 pt-20 sm:top-0 lg:right-72.5 backdrop-blur-sm flex justify-center items-center"
-          onClick={() => setIsEditModalOpen(false)}
-        >
+      {
+        isEditModalOpen && selectedClientId && (
           <div
-            className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-lg sm:w-11/12 sm:max-w-md mx-4 shadow-xl overflow-y-auto max-h-[80vh]"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 pt-20 sm:top-0 lg:right-72.5 backdrop-blur-sm flex justify-center items-center"
+            onClick={() => setIsEditModalOpen(false)}
           >
-            <EditClientForm
-              client={clients.find((c) => c.id === selectedClientId)!}
-              onClientUpdated={handleClientUpdated}
-              onClose={() => setIsEditModalOpen(false)}
-            />
+            <div
+              className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-lg sm:w-11/12 sm:max-w-md mx-4 shadow-xl overflow-y-auto max-h-[80vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <EditClientForm
+                client={clients.find((c) => c.id === selectedClientId)!}
+                onClientUpdated={handleClientUpdated}
+                onClose={() => setIsEditModalOpen(false)}
+              />
+            </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
-      {isDeleteModalOpen && selectedClientId && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-60 z-50 pt-20 sm:top-0 lg:right-72.5 backdrop-blur-sm flex justify-center items-center"
-          onClick={() => setIsDeleteModalOpen(false)}
-        >
+      {
+        isDeleteModalOpen && selectedClientId && (
           <div
-            className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-sm sm:w-11/12 sm:max-w-md mx-4 shadow-xl overflow-y-auto max-h-[80vh]"
-            onClick={(e) => e.stopPropagation()}
+            className="fixed inset-0 bg-black bg-opacity-60 z-50 pt-20 sm:top-0 lg:right-72.5 backdrop-blur-sm flex justify-center items-center"
+            onClick={() => setIsDeleteModalOpen(false)}
           >
-            <div className="text-center">
-              <h3 className="font-bold text-lg sm:text-xl text-gray-900 dark:text-gray-100 mb-4">
-                هل أنت متأكد أنك تريد حذف هذا العميل؟
-              </h3>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button
-                  onClick={handleDeleteConfirm}
-                  className={`relative flex w-full sm:w-auto justify-center rounded bg-red-600 p-3 font-medium text-white ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  disabled={isDeleting}
-                >
-                  {!isDeleting ? (
-                    <span className="">نعم، حذف</span>
-                  ) : (
-                    <span className="flex items-center gap-2 py-1">
-                      <span className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
-                      <p className="text-xs">جاري الحذف</p>
-                    </span>
-                  )}
-                </button>
-                <button
-                  onClick={() => setIsDeleteModalOpen(false)}
-                  className="flex w-full sm:w-auto justify-center rounded bg-gray-500 p-3 font-medium text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm mt-2 sm:mt-0"
-                >
-                  <span className="">لا، إلغاء</span>
-                </button>
+            <div
+              className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 w-full max-w-sm sm:w-11/12 sm:max-w-md mx-4 shadow-xl overflow-y-auto max-h-[80vh]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="text-center">
+                <h3 className="font-bold text-lg sm:text-xl text-gray-900 dark:text-gray-100 mb-4">
+                  هل أنت متأكد أنك تريد حذف هذا العميل؟
+                </h3>
+                <div className="flex flex-col sm:flex-row justify-center gap-4">
+                  <button
+                    onClick={handleDeleteConfirm}
+                    className={`relative flex w-full sm:w-auto justify-center rounded bg-red-600 p-3 font-medium text-white ${isDeleting ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={isDeleting}
+                  >
+                    {!isDeleting ? (
+                      <span className="">نعم، حذف</span>
+                    ) : (
+                      <span className="flex items-center gap-2 py-1">
+                        <span className="animate-spin w-3 h-3 border-2 border-white border-t-transparent rounded-full"></span>
+                        <p className="text-xs">جاري الحذف</p>
+                      </span>
+                    )}
+                  </button>
+                  <button
+                    onClick={() => setIsDeleteModalOpen(false)}
+                    className="flex w-full sm:w-auto justify-center rounded bg-gray-500 p-3 font-medium text-white hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 transition-all duration-200 shadow-sm mt-2 sm:mt-0"
+                  >
+                    <span className="">لا، إلغاء</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        )
+      }
+    </div >
   );
 };
 

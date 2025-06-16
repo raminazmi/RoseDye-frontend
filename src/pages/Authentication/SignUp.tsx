@@ -28,7 +28,7 @@
 //     }
 
 //     try {
-//       const response = await fetch('http://localhost:8000/api/v1/register', {
+//       const response = await fetch('https://api.36rwrd.online/api/v1/register', {
 //         method: 'POST',
 //         headers: {
 //           'Content-Type': 'application/json'

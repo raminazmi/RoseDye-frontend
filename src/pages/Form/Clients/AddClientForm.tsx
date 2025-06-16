@@ -108,7 +108,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('http://localhost:8000/api/v1/clients', {
+            const response = await fetch('https://api.36rwrd.online/api/v1/clients', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -121,7 +121,6 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                     renewal_balance: formData.renewal_balance.replace(/,/g, '') || '0',
                     original_gift: formData.original_gift.replace(/,/g, '') || '0',
                     additional_gift: formData.additional_gift.replace(/,/g, '') || '0',
-                    subscription_number: formData.subscription_number,
                 }),
             });
 
@@ -180,7 +179,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
     return (
         <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex justify-between items-center mb-6">
-                <h3 className="font-bold text-2xl text-gray-900 dark:text-white">إضافة إشتراك جديد</h3>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">إضافة أرقام اشتراكات جديدة</h3>
                 <button type="button" className="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 transition-colors duration-200 text-2xl" onClick={onClose}>
                     ×
                 </button>
@@ -240,7 +239,7 @@ const AddClientForm: React.FC<AddClientFormProps> = ({ onClientAdded, onClose })
                                 type="button"
                                 key={index}
                                 onClick={() => handlePackageSelect(pkg)}
-                                className={`p - 3 md: p - 4 rounded - lg border ${selectedPackage?.durationDays === pkg.durationDays ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : 'border-gray-300 dark:border-gray-600'} transition - all duration - 200`}
+                                className={`p-3 md:p-4 rounded-lg border ${selectedPackage?.durationDays === pkg.durationDays ? 'border-blue-500 bg-blue-50 dark:bg-blue-900' : 'border-gray-300 dark:border-gray-600'} transition - all duration - 200`}
                             >
                                 <div className="text-md md:text-lg font-semibold mb-2 md:mb-0">{pkg.durationDays} يوم</div>
                                 <div className="text-xs md:text-sm text-gray-600 dark:text-gray-300">هدية {pkg.gift} دينار</div>

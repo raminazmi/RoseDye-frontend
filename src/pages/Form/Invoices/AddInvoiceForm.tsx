@@ -17,7 +17,8 @@ interface FormErrors {
 
 interface Client {
     id: number;
-    subscription_number: string;
+    subscription_number: string | null;
+    phone: string;
 }
 
 interface AddInvoiceFormProps {
@@ -54,12 +55,15 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch('http://localhost:8000/api/v1/clients', {
+            const response = await fetch('https://api.36rwrd.online/api/v1/clients', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
-            if (data.status) setClients(data.data);
-            else toast.error('فشل في جلب العملاء: ' + data.message);
+            if (data.status) {
+                setClients(data.data);
+            } else {
+                toast.error('فشل في جلب العملاء: ' + data.message);
+            }
         } catch (error) {
             toast.error('حدث خطأ أثناء جلب بيانات العملاء');
             console.error(error);
@@ -76,7 +80,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 toast.error('يرجى تسجيل الدخول أولاً');
                 return;
             }
-            const response = await fetch('http://localhost:8000/api/v1/invoices/next-number', {
+            const response = await fetch('https://api.36rwrd.online/api/v1/invoices/next-number', {
                 headers: { Authorization: `Bearer ${token}` },
             });
             const data = await response.json();
@@ -96,8 +100,8 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.client_id) {
-            setErrors({ client_id: ['رجى اختيار رقم الاشتراك'] });
-            toast.error('رجى اختيار رقم الاشتراك');
+            setErrors({ client_id: ['رجى اختيار العميل'] });
+            toast.error('رجى اختيار العميل');
             return;
         }
 
@@ -117,7 +121,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                 amount: parseFloat(formData.amount) || 0,
             };
             console.log('Submitting Invoice:', payload);
-            const response = await fetch('http://localhost:8000/api/v1/invoices', {
+            const response = await fetch('https://api.36rwrd.online/api/v1/invoices', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -172,7 +176,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
 
     const clientOptions = clients.map(client => ({
         value: client.id.toString(),
-        label: client.subscription_number,
+        label: client.subscription_number || `رقم الهاتف: ${client.phone}`,
     }));
 
     const filterOption = (option: any, inputValue: string) => {
@@ -209,7 +213,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                     )}
                 </div>
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">رقم الاشتراك</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">العميل</label>
                     {isLoadingClients ? (
                         <div className="w-full rounded-md border border-gray-300 bg-gray-100 dark:bg-gray-700 h-10 flex items-center justify-center">
                             <span className="text-gray-500 dark:text-gray-400 text-sm">جارٍ التحميل...</span>
@@ -218,7 +222,7 @@ const AddInvoiceForm: React.FC<AddInvoiceFormProps> = ({ onInvoiceAdded, onClose
                         <Select
                             options={clientOptions}
                             onChange={handleClientSelect}
-                            placeholder="ابحث عن رقم الاشتراك..."
+                            placeholder="ابحث عن العميل..."
                             isClearable
                             isSearchable
                             filterOption={filterOption}

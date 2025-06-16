@@ -35,7 +35,7 @@ const AbandonedSubscriptions: React.FC = () => {
             }
 
             const response = await fetch(
-                `http://localhost:8000/api/v1/subscriptions/abandoned?page=${currentPage}&per_page=${itemsPerPage}`,
+                `https://api.36rwrd.online/api/v1/subscriptions/abandoned?page=${currentPage}&per_page=${itemsPerPage}`,
                 {
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,
@@ -63,29 +63,9 @@ const AbandonedSubscriptions: React.FC = () => {
             }
         } catch (error) {
             console.error('Fetch error:', error);
-            toast.error('خطأ في جلب بيانات الاشتراكات المهجورة');
+            toast.error('خطأ في جلب بيانات الاشتراكات المهملة');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const markAsNeglected = async (clientId: number) => {
-        try {
-            const response = await fetch(`http://localhost:8000/api/v1/clients/${clientId}/mark-as-neglected`, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem('access_token')}`,
-                },
-            });
-            const data = await response.json();
-            if (data.status) {
-                toast.success('تم وضع علامة على العميل كمهمل');
-                fetchAbandonedSubscriptions();
-            } else {
-                toast.error(data.message || 'فشل في وضع العلامة');
-            }
-        } catch (error) {
-            toast.error('حدث خطأ أثناء الاتصال بالخادم');
         }
     };
 
@@ -102,7 +82,7 @@ const AbandonedSubscriptions: React.FC = () => {
     return (
         <div className="rounded-lg border border-gray-200 bg-white shadow-lg dark:bg-gray-800 transition-all duration-300">
             <div className="border-b border-gray-200 py-4 px-6 dark:border-gray-700 flex justify-between items-center">
-                <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100">الاشتراكات المهجورة</h3>
+                <h3 className="font-bold text-xl text-gray-900 dark:text-gray-100">الاشتراكات المهملة</h3>
             </div>
 
             <div className="p-6">
@@ -117,18 +97,23 @@ const AbandonedSubscriptions: React.FC = () => {
                                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">تاريخ الانتهاء</th>
                                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الهاتف</th>
                                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">الحالة</th>
-                                <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">الإجراءات</th>
                             </tr>
                         </thead>
                         <tbody>
                             {subscriptions.map((subscription) => (
                                 <tr key={subscription.id} className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150">
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                                        <Link
-                                            to={`/subscribers/${subscription.id}`}
-                                            className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200">
-                                            {subscription.subscription_number}
-                                        </Link>
+                                        {subscription.subscription_number ?
+                                            <Link to={`/subscribers/${subscription.id}`}>
+                                                <span className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200">
+                                                    {subscription.subscription_number}
+                                                </span>
+                                            </Link>
+                                            :
+                                            <span className="transition-colors duration-200">
+                                                -
+                                            </span>
+                                        }
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-2 text-gray-800 dark:text-gray-200">
                                         {formatDate(subscription.end_date)}
@@ -138,14 +123,6 @@ const AbandonedSubscriptions: React.FC = () => {
                                     </td>
                                     <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                                         {subscription.status === 'active' ? 'نشط' : subscription.status}
-                                    </td>
-                                    <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
-                                        <button
-                                            onClick={() => markAsNeglected(subscription.id)}
-                                            className="bg-red-500 text-white px-3 py-1 rounded-md hover:bg-red-600 dark:bg-red-600 dark:hover:bg-red-700 transition-all duration-200 shadow-sm"
-                                        >
-                                            وضع علامة كمهمل
-                                        </button>
                                     </td>
                                 </tr>
                             ))}

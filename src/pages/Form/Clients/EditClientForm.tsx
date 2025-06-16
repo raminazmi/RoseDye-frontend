@@ -20,6 +20,7 @@ interface FormErrors {
     start_date?: string[];
     end_date?: string[];
     subscription_number?: string[];
+    original_gift?: string[];
     additional_gift?: string[];
 }
 
@@ -153,7 +154,7 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                 return;
             }
 
-            const response = await fetch(`http://localhost:8000/api/v1/clients/${client.id}`, {
+            const response = await fetch(`https://api.36rwrd.online/api/v1/clients/${client.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -174,6 +175,8 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                 onClientUpdated();
             } else if (data.errors) {
                 setErrors(data.errors);
+            } else {
+                toast.error(data.message || 'فشل في حفظ العميل');
             }
         } catch (error) {
             toast.error('حدث خطأ أثناء الاتصال بالخادم');
@@ -229,9 +232,8 @@ const EditClientForm: React.FC<EditClientFormProps> = ({ client, onClientUpdated
                         onChange={handleInputChange}
                         className="w-full rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 py-2 px-3 text-gray-900 dark:text-white outline-none focus:border-primary focus-visible:shadow-md dark:focus:border-indigo-400 transition-all duration-200"
                     />
-                    {errors.subscription_number && (
-                        <span className="text-red-500 text-sm mt-1 block">{errors.subscription_number[0]}</span>
-                    )}
+                    {errors.subscription_number && <span className="text-red-500 text-sm mt-1 block">{errors.subscription_number[0]}</span>}
+
                 </div>
 
                 <div className="sm:col-span-2">

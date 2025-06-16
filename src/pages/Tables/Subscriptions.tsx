@@ -53,7 +53,7 @@ const Subscriptions: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`http://localhost:8000/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`,
+      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions?page=${currentPage}&per_page=${itemsPerPage}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -99,60 +99,10 @@ const Subscriptions: React.FC = () => {
     }
   };
 
-  const toggleAvailability = async (subscriptionNumberId: number) => {
-    try {
-      setTogglingStatus((prev) => ({ ...prev, [subscriptionNumberId]: true }));
-      const accessToken = localStorage.getItem('access_token');
-      if (!accessToken) {
-        toast.error('يرجى تسجيل الدخول أولاً');
-        navigate('/login');
-        return;
-      }
-
-      const response = await fetch(`http://localhost:8000/api/v1/clients/subscription-numbers/${subscriptionNumberId}/toggle-availability`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-            Accept: 'application/json',
-          },
-        }
-      );
-
-      const data = await response.json();
-      if (response.ok && data.status) {
-        toast.success(data.message || 'تم تغيير حالة توفر رقم الاشتراك بنجاح');
-        setSubscriptions((prev) =>
-          prev.map((sub) =>
-            sub.subscription_number_id === subscriptionNumberId
-              ? { ...sub, is_available: data.data.is_available }
-              : sub
-          )
-        );
-        fetchSubscriptions();
-      } else {
-        if (response.status === 404) {
-          toast.error('رقم الاشتراك غير موجود');
-        } else if (response.status === 401) {
-          toast.error('انتهت جلسة تسجيل الدخول، يرجى تسجيل الدخول مجددًا');
-          navigate('/login');
-        } else {
-          toast.error(data.message || 'فشل في تغيير حالة التوفر');
-        }
-      }
-    } catch (error) {
-      console.error('Toggle error:', error);
-      toast.error('حدث خطأ أثناء تغيير حالة التوفر');
-    } finally {
-      setTogglingStatus((prev) => ({ ...prev, [subscriptionNumberId]: false }));
-    }
-  };
-
   const exportPdf = async () => {
     setExportLoading(true);
     try {
-      const response = await axios.get('http://localhost:8000/api/v1/subscriptions/export-pdf', {
+      const response = await axios.get('https://api.36rwrd.online/api/v1/subscriptions/export-pdf', {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('access_token')}`,
         },
@@ -177,7 +127,7 @@ const Subscriptions: React.FC = () => {
 
   const handleStatusChange = async (subscriptionId: number, newStatus: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${subscriptionId}/status`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -208,7 +158,7 @@ const Subscriptions: React.FC = () => {
         return;
       }
       const message = `تنبيه: اشتراكك رقم ${subscription?.subscription_number} على وشك الانتهاء بتاريخ ${subscription?.end_date}. المتبقي ${subscription?.total_due} د.ك. الرجاء استخدامه قبل الانتهاء.`;
-      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${subscriptionId}/notify`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${subscriptionId}/notify`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -261,7 +211,7 @@ const Subscriptions: React.FC = () => {
 
     try {
       setRenewingStatus((prev) => ({ ...prev, [selectedSubscriptionId]: true }));
-      const response = await fetch(`http://localhost:8000/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
+      const response = await fetch(`https://api.36rwrd.online/api/v1/subscriptions/${selectedSubscriptionId}/renew`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -400,11 +350,6 @@ const Subscriptions: React.FC = () => {
                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">المجموع المستحق</th>
                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-start">رقم الهاتف</th>
                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">الحالة</th>
-                {subscriptions.map((subscription) => (
-                  subscription.status.toLowerCase() !== 'canceled' && (
-                    <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">توفر رقم الإشتراك</th>
-                  ))
-                )}
                 < th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">إرسال تنبيه</th>
                 <th className="px-4 py-3 text-gray-700 dark:text-gray-200 font-semibold text-sm text-center">إجراءات</th>
               </tr>
@@ -416,12 +361,17 @@ const Subscriptions: React.FC = () => {
                   className="hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-150"
                 >
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
-                    <Link
-                      to={`/subscribers/${subscription.id}`}
-                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200"
-                    >
-                      {subscription.subscription_number}
-                    </Link>
+                    {subscription.subscription_number ?
+                      <Link to={`/subscribers/${subscription.id}`}>
+                        <span className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline transition-colors duration-200">
+                          {subscription.subscription_number}
+                        </span>
+                      </Link>
+                      :
+                      <span className="transition-colors duration-200">
+                        -
+                      </span>
+                    }
                   </td>
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-gray-800 dark:text-gray-200">
                     {subscription.invoices_count}
@@ -444,20 +394,6 @@ const Subscriptions: React.FC = () => {
                   </td>
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
                     {getStatusDisplay(subscription)}
-                  </td>
-                  <td className="… text-center">
-                    {subscription.subscription_number_id
-                      ? (
-                        <ToggleSwitch
-                          checked={subscription.is_available}
-                          onChange={() => toggleAvailability(subscription.subscription_number_id!)}
-                          disabled={togglingStatus[subscription.subscription_number_id!]}
-                        />
-                      )
-                      : (
-                        <span className="text-gray-400">—</span>
-                      )
-                    }
                   </td>
 
                   <td className="border-t border-gray-200 dark:border-gray-700 px-4 py-3 text-center">
